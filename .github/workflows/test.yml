@@ -1,0 +1,67 @@
+name: TEST
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Gitleaks Check
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+
+      - name: Check Code Formatting
+        run: echo "Coming Soon..."
+
+      - name: Run Static Analysis
+        run: echo "Coming Soon..."
+
+      - name: Run Unit Tests
+        run: echo "Coming Soon..."
+
+      - name: Run Integration Tests
+        run: echo "Coming Soon..."
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "fs"
+          severity: "CRITICAL,HIGH"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          exit-code: "1"
+
+      - name: Archive Test Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: TestResults
+          retention-days: 7
+
+      - name: Archive Security Scan Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-scan-reports
+          path: trivy-results.sarif
+          retention-days: 7

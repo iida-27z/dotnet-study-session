@@ -1,0 +1,13 @@
+# 環境変数ファイル
+**/.env
+
+# ログファイル
+*.log
+
+# C# ビルド成果物
+[Bb]in/
+[Oo]bj/
+
+# NuGet パッケージ
+packages/
+*.nupkg

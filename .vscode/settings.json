@@ -1,0 +1,39 @@
+{
+    // スペルチェッカーの設定
+    "cSpell.words": [
+        "CEINTL",
+        "CERTDIR",
+        "csdevkit",
+        "dbname",
+        "dearmor",
+        "dotnettools",
+        "ecmel",
+        "EOSQL",
+        "getent",
+        "gitmessage",
+        "healthcheck",
+        "isready",
+        "keyrings",
+        "mhutchie",
+        "mtxr",
+        "NOPASSWD",
+        "psql",
+        "sarif",
+        "sqltools",
+        "trixie",
+        "userdel"
+    ],
+    // gitの設定
+    "git.blame.statusBarItem.enabled": true,
+    "git.branchProtection": [
+        "main"
+    ],
+    "git.allowForcePush": true,
+    "git.useForcePushWithLease": true,
+    "git.useForcePushIfIncludes": true,
+    "git.confirmForcePush": true,
+    // Markdown表示設定
+    "workbench.editorAssociations": {
+        "*.md": "vscode.markdown.preview.editor"
+    }
+}
