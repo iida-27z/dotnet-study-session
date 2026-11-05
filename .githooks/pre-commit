@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+echo "==> Running pre-commit checks..."
+
+# Gitleaksで機密情報チェックを実行
+gitleaks protect --staged --no-banner --verbose
+
+echo "==> All pre-commit checks passed!"
