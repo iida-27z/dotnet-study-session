@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "StudySession.Web",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/StudySession.Web/StudySession.Web.csproj"
+        },
+        {
+            "name": "StudySession.Batch",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/StudySession.Batch/StudySession.Batch.csproj"
+        }
+    ]
+}
