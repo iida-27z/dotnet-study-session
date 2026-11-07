@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参加者一覧・出欠管理 - 勉強会ポータル</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">本文へ移動</a>
+    <div class="wrapper">
+        <header>
+            <div class="header">
+                <a href="study_session_list.html" class="link-reset"><span class="site-title">勉強会ポータル</span></a>
+                <div>
+                    <div>
+                        <form action="#" method="post"><a href="login.html"><button class="header-btn"
+                                    type="button">ログアウト</button></a></form>
+                    </div>
+                </div>
+            </div>
+            <nav class="nav-bar" aria-label="グローバルナビゲーション">
+                <a href="study_session_list.html" class="nav-menu">勉強会一覧</a>
+                <a href="study_session_create.html" class="nav-menu">勉強会作成</a>
+            </nav>
+        </header>
+
+        <main id="main-content" tabindex="-1">
+            <section class="common-container">
+                <nav class="breadcrumb" aria-label="パンくずリスト">
+                    <ol class="breadcrumb-list">
+                        <li><a href="study_session_list.html" class="link-reset">勉強会一覧</a></li>
+                        <li><span aria-current="page">【ハンズオン】ネットワーク機器実機演習</span></li>
+                    </ol>
+                </nav>
+                <h1 class="page-title">【ハンズオン】ネットワーク機器実機演習</h1>
+                <div class="info-message margin-top-05" role="status">
+                    <strong>出欠変更を受付中:</strong> 開催前日の18:00まで出欠の変更が可能です。
+                </div>
+                <h2 class="common-heading">概要</h2>
+                <p class="page-lead">社内ネットワーク構築の基礎を学ぶハンズオンセミナーです。実機のルーターやスイッチを使用し、VLAN設定およびルーティングテーブルの設定演習を行います。</p>
+                <hr>
+                <!-- 自身の出欠（統合ステータス）・コメント更新フォーム -->
+                <h2 class="common-heading">開催情報</h2>
+                <div class="surface-panel margin-bottom-05">
+                    <div class="meta-row">
+                        <span class="bold display-block margin-bottom-05">開催形式:</span>
+                        <span class="badge badge-success">対面のみ (現地開催)</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="bold display-block margin-bottom-05">開催日時:</span>
+                        <span>2026年7月12日 (日) 17:00 〜 19:00</span>
+                    </div>
+                </div>
+                <hr>
+                <h2 class="common-heading">参加申込</h2>
+                <form action="#" method="post" class="surface-panel margin-bottom-05">
+                    <span class="bold display-block margin-bottom-05">現在のステータス:</span> <span
+                        class="badge badge-warning">未回答</span>
+                    <div class="margin-top-05">
+                        <label><input type="radio" name="my_status" value="onsite"> 対面出席</label>&nbsp;&nbsp;
+                        <label class="color-gray"><input type="radio" name="my_status" value="remote" disabled> リモート出席
+                            (対象外)</label>&nbsp;&nbsp;
+                        <label><input type="radio" name="my_status" value="absent"> 欠席</label>
+                    </div>
+                    <div class="margin-top-05">
+                        <label for="my-comment" class="bold">コメント・連絡事項:</label>
+                        <input type="text" id="my-comment" name="comment" class="input-wide margin-top-05"
+                            placeholder="例: 10分ほど遅刻予定です / 実機準備のサポート可能です">
+                    </div>
+                    <div class="margin-top-05">
+                        <button type="submit" class="btn-primary btn-compact">更新する</button>
+                        <a href="study_session_detail.html" class="btn-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </section>
+            <section class="common-container">
+                <h2 class="common-heading">参加者名簿</h2>
+                <div class="table-scroll-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ユーザーID</th>
+                                <th>氏名</th>
+                                <th>出欠・参加ステータス</th>
+                                <th>コメント</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>USR001</td>
+                                <td class="bold">開発 太郎</td>
+                                <td><span class="badge badge-success">対面出席</span></td>
+                                <td>実機セッティングのお手伝い可能です</td>
+                            </tr>
+                            <tr>
+                                <td>USR005</td>
+                                <td>デザイン 美子</td>
+                                <td><span class="badge badge-success">対面出席</span></td>
+                                <td>業務都合のため16:30頃から途中参加します</td>
+                            </tr>
+                            <tr>
+                                <td>USR012</td>
+                                <td class="color-gray">運用 三郎</td>
+                                <td><span class="badge badge-danger">欠席</span></td>
+                                <td class="color-gray">緊急メンテナンス作業のため欠席します</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <div>
+                <hr>
+                <p class="center color-gray">2026 11/07 更新</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
