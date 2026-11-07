@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勉強会作成 - 勉強会ポータル</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">本文へ移動</a>
+    <div class="wrapper">
+        <header>
+            <div class="header">
+                <a href="study_session_list.html" class="link-reset"><span class="site-title">勉強会ポータル</span></a>
+                <div>
+                    <form action="#" method="post"><a href="login.html"><button class="header-btn"
+                                type="button">ログアウト</button></a></form>
+                </div>
+            </div>
+            <nav class="nav-bar" aria-label="グローバルナビゲーション">
+                <a href="study_session_list.html" class="nav-menu">勉強会一覧</a>
+                <a href="study_session_create.html" class="nav-menu" aria-current="page">勉強会作成</a>
+            </nav>
+        </header>
+
+        <main id="main-content" tabindex="-1">
+            <section class="common-container">
+                <nav class="breadcrumb" aria-label="パンくずリスト">
+                    <ol class="breadcrumb-list">
+                        <li><a href="study_session_list.html" class="link-reset">勉強会一覧</a></li>
+                        <li><span aria-current="page">新規作成</span></li>
+                    </ol>
+                </nav>
+                <h1 class="page-title">新規勉強会の登録</h1>
+                <p class="page-lead">対面・リモートの開催形式と定員を設定して登録します。</p>
+                <hr>
+
+                <form action="study_session_list.html" method="post" class="content-stack">
+                    <div>
+                        <label for="title" class="bold">勉強会テーマ <span class="field-required">*必須</span></label>
+                        <input type="text" id="title" name="title" class="input-wide margin-top-05"
+                            placeholder="例: Spring Boot 3.x 移行実践ワークショップ" required>
+                    </div>
+
+                    <div>
+                        <label for="event-date" class="bold">開始日時 <span class="field-required">*必須</span></label>
+                        <input type="datetime-local" id="event-date" name="eventDate" class="input-wide margin-top-05"
+                            required>
+                    </div>
+
+                    <div>
+                        <label for="end-date" class="bold">終了日時 <span class="field-required">*必須</span></label>
+                        <input type="datetime-local" id="end-date" name="endDate" class="input-wide margin-top-05"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="bold">開催形式 <span class="field-required">*必須</span></label>
+                        <div class="inline-option-group">
+                            <label><input type="radio" name="format" value="hybrid" checked> ハイブリッド (対面 + リモート)</label>
+                            <label><input type="radio" name="format" value="onsite_only"> 対面のみ</label>
+                            <label><input type="radio" name="format" value="remote_only"> リモートのみ</label>
+                        </div>
+                    </div>
+
+                    <!-- 参加形式ごとの定員入力欄 -->
+                    <div class="form-grid">
+                        <div>
+                            <label for="capacity-onsite" class="bold">対面枠 定員 (名)</label>
+                            <input type="number" id="capacity-onsite" name="capacityOnsite"
+                                class="input-wide margin-top-05" min="0" max="200" value="20">
+                            <p class="helper-text">※対面非対応の場合は「0」に設定</p>
+                        </div>
+                        <div>
+                            <label for="capacity-remote" class="bold">リモート枠 定員 (名)</label>
+                            <input type="number" id="capacity-remote" name="capacityRemote"
+                                class="input-wide margin-top-05" min="0" max="500" value="30">
+                            <p class="helper-text">※リモート非対応の場合は「0」に設定</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="description" class="bold">概要</label>
+                        <textarea id="description" name="description" class="input-wide margin-top-05" rows="4"
+                            placeholder="勉強会の目的、事前準備、オンラインURL等を記載してください。"></textarea>
+                    </div>
+
+                    <div class="button-row" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary">登録して公開する</button>
+                        <a href="study_session_list.html" class="btn-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </section>
+        </main>
+        <footer>
+            <div>
+                <hr>
+                <p class="center color-gray">2026 11/07 更新</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

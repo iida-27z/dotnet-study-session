@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勉強会一覧 - 勉強会ポータル</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">本文へ移動</a>
+    <div class="wrapper">
+        <header>
+            <div class="header">
+                <a href="study_session_list.html" class="link-reset"><span class="site-title">勉強会ポータル</span></a>
+                <div>
+                    <form action="#" method="post"><a href="login.html"><button class="header-btn"
+                                type="button">ログアウト</button></a></form>
+                </div>
+            </div>
+            <nav class="nav-bar" aria-label="グローバルナビゲーション">
+                <a href="study_session_list.html" class="nav-menu" aria-current="page">勉強会一覧</a>
+                <a href="study_session_create.html" class="nav-menu">勉強会作成</a>
+            </nav>
+        </header>
+
+        <main id="main-content" tabindex="-1">
+            <section class="common-container">
+                <h1 class="page-title">開催予定の社内勉強会一覧</h1>
+                <p class="page-lead">対面・リモートそれぞれの空き状況を確認して回答できます。</p>
+                <hr>
+
+                <div class="surface-panel margin-bottom-05">
+                    <form action="#" method="get" class="meta-row">
+                        <input type="search" class="search-box" placeholder="キーワード・技術タグで検索...">
+                        <button type="submit" class="btn-primary">検索</button>
+                    </form>
+                </div>
+
+                <div class="table-scroll-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>開催日時</th>
+                                <th>勉強会テーマ</th>
+                                <th>対面枠</th>
+                                <th>リモート枠</th>
+                                <th>あなたの出欠</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ハイブリッド開催の例 -->
+                            <tr>
+                                <td>2026/07/05 16:00</td>
+                                <td><a href="study_session_detail.html" class="bold link-reset">Next.js 14 App Router
+                                        移行の勘所</a></td>
+                                <td>
+                                    <span class="bold">20 / 20 名 <span class="color-red">(満席)</span></span>
+                                </td>
+                                <td>
+                                    <span class="bold">22 / 30 名</span>
+                                </td>
+                                <td><span class="badge badge-info">リモート出席</span></td>
+                            </tr>
+                            <!-- 対面のみの例（リモートはグレー表示） -->
+                            <tr>
+                                <td>2026/07/12 17:00</td>
+                                <td><a href="study_session_detail.html" class="bold link-reset">【ハンズオン】ネットワーク機器実機演習</a>
+                                </td>
+                                <td>
+                                    <span class="bold">15 / 20 名</span>
+                                </td>
+                                <td class="color-gray">
+                                    <span>- (対象外)</span>
+                                </td>
+                                <td><span class="badge badge-warning">未回答</span></td>
+                            </tr>
+                            <!-- リモートのみの例（対面はグレー表示） -->
+                            <tr>
+                                <td>2026/07/19 18:00</td>
+                                <td><a href="study_session_detail.html"
+                                        class="bold link-reset">ArchUnitとTestcontainersで進める堅牢なテスト手法</a></td>
+                                <td class="color-gray">
+                                    <span>- (対象外)</span>
+                                </td>
+                                <td>
+                                    <span class="bold">45 / 50 名</span>
+                                </td>
+                                <td><span class="badge badge-secondary">未回答</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <div>
+                <hr>
+                <p class="center color-gray">2026 11/07 更新</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
