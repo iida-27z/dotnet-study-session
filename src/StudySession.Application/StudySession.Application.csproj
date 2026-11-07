@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\StudySession.Domain\StudySession.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

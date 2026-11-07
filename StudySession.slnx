@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/StudySession.Application/StudySession.Application.csproj" />
+    <Project Path="src/StudySession.Batch/StudySession.Batch.csproj" />
+    <Project Path="src/StudySession.Domain/StudySession.Domain.csproj" />
+    <Project Path="src/StudySession.Infrastructure/StudySession.Infrastructure.csproj" />
+    <Project Path="src/StudySession.Web/StudySession.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StudySession.ApplicationTests/StudySession.ApplicationTests.csproj" />
+    <Project Path="tests/StudySession.BatchTests/StudySession.BatchTests.csproj" />
+    <Project Path="tests/StudySession.DomainTests/StudySession.DomainTests.csproj" />
+    <Project Path="tests/StudySession.InfrastructureTests/StudySession.InfrastructureTests.csproj" />
+    <Project Path="tests/StudySession.IntegrationTests/StudySession.IntegrationTests.csproj" />
+    <Project Path="tests/StudySession.WebTests/StudySession.WebTests.csproj" />
+  </Folder>
+</Solution>
