@@ -36,5 +36,7 @@
     // Markdown表示設定
     "workbench.editorAssociations": {
         "*.md": "vscode.markdown.preview.editor"
-    }
+    },
+    // C# 関連の設定
+    "dotnet.defaultSolution": "StudySession.slnx"
 }
