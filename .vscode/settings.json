@@ -19,6 +19,7 @@
         "NOPASSWD",
         "psql",
         "sarif",
+        "slnx",
         "sqltools",
         "trixie",
         "userdel"
