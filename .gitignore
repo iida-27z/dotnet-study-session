@@ -11,3 +11,7 @@
 # NuGet パッケージ
 packages/
 *.nupkg
+
+# テストレポート
+TestResults/
+*.trx
