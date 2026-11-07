@@ -4,19 +4,26 @@ on:
   pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
-permissions:
-  contents: read
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Gitleaks Check
         uses: gitleaks/gitleaks-action@v3
@@ -24,31 +31,41 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+
+      - name: Restore
+        run: dotnet restore
 
       - name: Check Code Formatting
-        run: echo "Coming Soon..."
+        run: dotnet format --verify-no-changes --no-restore
 
-      - name: Run Static Analysis
-        run: echo "Coming Soon..."
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Run Unit Tests
-        run: echo "Coming Soon..."
+      - name: Run Unit & Integration Tests
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --logger "trx" \
+            --results-directory TestResults
 
-      - name: Run Integration Tests
-        run: echo "Coming Soon..."
+      - name: Dry-run Publish
+        run: dotnet publish --configuration Release --no-build
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
+      - name: Generate Coverage Report
+        if: always()
+        uses: danielpalme/ReportGenerator-GitHub-Action@v5
         with:
-          scan-type: "fs"
-          severity: "CRITICAL,HIGH"
-          format: "sarif"
-          output: "trivy-results.sarif"
-          exit-code: "1"
+          reports: 'TestResults/**/coverage.cobertura.xml'
+          targetdir: 'TestResults/CoverageReport'
+          reporttypes: 'Html'
 
       - name: Archive Test Reports
         if: always()
@@ -56,12 +73,186 @@ jobs:
         with:
           name: test-reports
           path: TestResults
+          if-no-files-found: warn
           retention-days: 7
 
-      - name: Archive Security Scan Reports
+  static-analysis:
+    name: Run Static Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+          build-mode: manual
+
+      - name: Build for CodeQL
+        run: dotnet build --configuration Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+
+  file-system-scan:
+    name: Run File System Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Run Trivy vulnerability scanner (Filesystem)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "fs"
+          severity: "CRITICAL,HIGH"
+          limit-severities-for-sarif: true
+          ignore-unfixed: true
+          format: "sarif"
+          output: "trivy-results-fs.sarif"
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF Report (Filesystem)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results-fs.sarif
+          category: "trivy-fs"
+
+      - name: Archive Security Scan Reports (Filesystem)
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: security-scan-reports
-          path: trivy-results.sarif
+          name: security-scan-reports-fs
+          path: trivy-results-fs.sarif
+          if-no-files-found: warn
+          retention-days: 7
+
+  container-scan-web:
+    name: Run Web Container Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Dry-run Container Build(Web)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.web
+          pull: true
+          load: true
+          push: false
+          tags: local-ci-web:test
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web
+
+      - name: Run Trivy vulnerability scanner (Web Image)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "image"
+          image-ref: "local-ci-web:test"
+          severity: "CRITICAL,HIGH"
+          limit-severities-for-sarif: true
+          ignore-unfixed: true
+          format: "sarif"
+          output: "trivy-results-web-image.sarif"
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF Report (Web Image)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results-web-image.sarif
+          category: "trivy-web-image"
+
+      - name: Archive Security Scan Reports (Web Image)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-scan-reports-web-image
+          path: trivy-results-web-image.sarif
+          if-no-files-found: warn
+          retention-days: 7
+
+  container-scan-batch:
+    name: Run Batch Container Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Dry-run Container Build(Batch)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.batch
+          pull: true
+          load: true
+          push: false
+          tags: local-ci-batch:test
+          cache-from: type=gha,scope=batch
+          cache-to: type=gha,scope=batch
+
+      - name: Run Trivy vulnerability scanner (Batch Image)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "image"
+          image-ref: "local-ci-batch:test"
+          severity: "CRITICAL,HIGH"
+          limit-severities-for-sarif: true
+          ignore-unfixed: true
+          format: "sarif"
+          output: "trivy-results-batch-image.sarif"
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF Report (Batch Image)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results-batch-image.sarif
+          category: "trivy-batch-image"
+
+      - name: Archive Security Scan Reports (Batch Image)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-scan-reports-batch-image
+          path: trivy-results-batch-image.sarif
+          if-no-files-found: warn
           retention-days: 7
