@@ -8,15 +8,23 @@ on:
 
 permissions:
   contents: read
+  security-events: write
+
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Gitleaks Check
         uses: gitleaks/gitleaks-action@v3
@@ -24,31 +32,60 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+
+      - name: Restore
+        run: dotnet restore
 
       - name: Check Code Formatting
-        run: echo "Coming Soon..."
+        run: dotnet format --verify-no-changes --no-restore
 
-      - name: Run Static Analysis
-        run: echo "Coming Soon..."
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
 
-      - name: Run Unit Tests
-        run: echo "Coming Soon..."
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Run Integration Tests
-        run: echo "Coming Soon..."
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+
+      - name: Run Unit & Integration Tests
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --logger "trx" \
+            --results-directory TestResults
+
+      - name: Generate Coverage Report
+        if: always()
+        uses: danielpalme/ReportGenerator-GitHub-Action@v5
+        with:
+          reports: 'TestResults/**/coverage.cobertura.xml'
+          targetdir: 'TestResults/CoverageReport'
+          reporttypes: 'Html'
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
-          severity: "CRITICAL,HIGH"
           format: "sarif"
+          severity: "CRITICAL,HIGH"
           output: "trivy-results.sarif"
-          exit-code: "1"
+
+      - name: Upload Trivy SARIF Report
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: "trivy"
 
       - name: Archive Test Reports
         if: always()
@@ -56,6 +93,7 @@ jobs:
         with:
           name: test-reports
           path: TestResults
+          if-no-files-found: warn
           retention-days: 7
 
       - name: Archive Security Scan Reports
@@ -64,4 +102,5 @@ jobs:
         with:
           name: security-scan-reports
           path: trivy-results.sarif
+          if-no-files-found: warn
           retention-days: 7
