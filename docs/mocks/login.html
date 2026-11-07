@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - 開発ポータル</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">本文へ移動</a>
+    <div class="wrapper">
+        <header>
+            <div class="header">
+                <a href="login.html" class="link-reset"><span class="site-title">勉強会ポータル</span></a>
+            </div>
+            <!-- <nav class="nav-bar" aria-label="ログインページナビゲーション">
+            </nav> -->
+        </header>
+        <main id="main-content" tabindex="-1">
+            <section class="common-container auth-shell">
+                <h1 class="page-title">ログインしてください</h1>
+                <hr>
+                <form action="#" method="post" class="content-stack">
+                    <div>
+                        <label for="login-user-id" class="bold">ユーザーID</label>
+                        <span class="field-required" aria-hidden="true">必須</span>
+                        <input id="login-user-id" type="text" class="input-wide margin-top-05" value="dev-user-01"
+                            autocomplete="username" required aria-required="true">
+                    </div>
+                    <div>
+                        <label for="login-password" class="bold">パスワード</label>
+                        <span class="field-required" aria-hidden="true">必須</span>
+                        <input id="login-password" type="password" class="input-wide margin-top-05"
+                            value="password-example" autocomplete="current-password" required aria-required="true"
+                            aria-describedby="login-help-text">
+                    </div>
+                    <div class="button-row">
+                        <a href="study_session_list.html" class="btn-primary">ログイン</a>
+                    </div>
+                </form>
+            </section>
+        </main>
+        <footer>
+            <div>
+                <hr>
+                <p class="center">2026 11/07 更新</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
