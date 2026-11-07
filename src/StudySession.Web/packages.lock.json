@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "studysession.application": {
+        "type": "Project",
+        "dependencies": {
+          "StudySession.Domain": "[1.0.0, )"
+        }
+      },
+      "studysession.domain": {
+        "type": "Project"
+      },
+      "studysession.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "StudySession.Application": "[1.0.0, )",
+          "StudySession.Domain": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}
