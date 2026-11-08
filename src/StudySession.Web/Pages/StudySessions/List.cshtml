@@ -1,5 +1,7 @@
 @page "/study_sessions"
-@model StudySession.Web.Pages.StudySessions.ListModel
+@using StudySession.Domain.Participation
+@using StudySession.Domain.StudySessions
+@model ListModel
 @{
     ViewData["Title"] = "勉強会一覧";
 }
@@ -31,20 +33,76 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>2026/07/05 16:00</td>
-                    <td><span class="bold">Next.js 14 ハンズオン</span></td>
-                    <td>20 / 20 名 <span class="color-red">(満席)</span></td>
-                    <td>22 / 30 名</td>
-                    <td><span class="badge badge-info">リモート出席</span></td>
-                </tr>
-                <tr>
-                    <td>2026/07/12 17:00</td>
-                    <td><span class="bold">【ハンズオン】ネットワーク機器実機演習</span></td>
-                    <td>15 / 20 名</td>
-                    <td class="color-gray">- (対象外)</td>
-                    <td><span class="badge badge-warning">未回答</span></td>
-                </tr>
+                @if (Model.Sessions.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="helper-text">表示する勉強会はありません。</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var session in Model.Sessions)
+                    {
+                        var currentStatus = session.IsAttendingOnsite == AttendanceStatus.Onsite
+                            ? "対面出席"
+                            : session.IsAttendingRemote == AttendanceStatus.Remote
+                                ? "リモート出席"
+                                : session.IsAttendingOnsite == AttendanceStatus.Absent || session.IsAttendingRemote == AttendanceStatus.Absent
+                                    ? "欠席"
+                                    : "未回答";
+
+                        var badgeClass = currentStatus == "対面出席" || currentStatus == "リモート出席"
+                            ? "badge-info"
+                            : currentStatus == "欠席"
+                                ? "badge-danger"
+                                : "badge-warning";
+
+                        var onsiteDisplay = session.Format == StudySessionFormat.RemoteOnly
+                            ? "- (対象外)"
+                            : $"{session.ParticipantsCountOnsite} / {session.CapacityOnsite} 名";
+
+                        var remoteDisplay = session.Format == StudySessionFormat.OnsiteOnly
+                            ? "- (対象外)"
+                            : $"{session.ParticipantsCountRemote} / {session.CapacityRemote} 名";
+
+                        var onsiteFull = session.Format != StudySessionFormat.RemoteOnly && session.CapacityOnsite > 0 && session.ParticipantsCountOnsite >= session.CapacityOnsite;
+                        var remoteFull = session.Format != StudySessionFormat.OnsiteOnly && session.CapacityRemote > 0 && session.ParticipantsCountRemote >= session.CapacityRemote;
+
+                        <tr>
+                            <td>@session.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td><span class="bold">@session.Title</span></td>
+                            <td>
+                                @if (session.Format == StudySessionFormat.RemoteOnly)
+                                {
+                                    <span class="color-gray">- (対象外)</span>
+                                }
+                                else
+                                {
+                                    <span>@onsiteDisplay</span>
+                                    @if (onsiteFull)
+                                    {
+                                        <span class="color-red"> (満席)</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (session.Format == StudySessionFormat.OnsiteOnly)
+                                {
+                                    <span class="color-gray">- (対象外)</span>
+                                }
+                                else
+                                {
+                                    <span>@remoteDisplay</span>
+                                    @if (remoteFull)
+                                    {
+                                        <span class="color-red"> (満席)</span>
+                                    }
+                                }
+                            </td>
+                            <td><span class="badge @badgeClass">@currentStatus</span></td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>

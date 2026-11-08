@@ -1,0 +1,55 @@
+using StudySession.Domain.Participation;
+using StudySession.Domain.StudySessions;
+using StudySession.Domain.Users;
+
+namespace StudySession.Application.AttendanceSummary;
+
+/// <summary>
+/// 勉強会の内容と定員に対する参加者情報とあるユーザーの出席状況のサマリーを表します。
+/// </summary>
+public sealed record StudySessionParticipationSummaryDto(
+    /// <summary>
+    /// 勉強会ID
+    /// </summary>
+    StudySessionId SessionId,
+    /// <summary>
+    /// 開始日時
+    /// </summary>
+    DateTime StartTime,
+    /// <summary>
+    /// タイトル
+    /// </summary>
+    string Title,
+    /// <summary>
+    /// 形式
+    /// </summary>
+    StudySessionFormat Format,
+    /// <summary>
+    /// 現地参加の定員
+    /// </summary>
+    int CapacityOnsite,
+    /// <summary>
+    /// 現地参加の人数
+    /// </summary>
+    int ParticipantsCountOnsite,
+    /// <summary>
+    /// リモート参加の定員
+    /// </summary>
+    int CapacityRemote,
+    /// <summary>
+    /// リモート参加の人数
+    /// </summary>
+    int ParticipantsCountRemote,
+    /// <summary>
+    /// ユーザーID
+    /// </summary>
+    UserId UserId,
+    /// <summary>
+    /// 出席状況
+    /// </summary>
+    AttendanceStatus IsAttendingOnsite,
+    /// <summary>
+    /// リモート参加の出席状況
+    /// </summary>
+    AttendanceStatus IsAttendingRemote
+);
