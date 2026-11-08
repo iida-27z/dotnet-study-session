@@ -1,5 +1,3 @@
-using StudySession.Domain.Users;
-
 namespace StudySession.Domain.Users;
 
 /// <summary>
@@ -7,6 +5,11 @@ namespace StudySession.Domain.Users;
 /// </summary>
 public interface IUserRepository
 {
+    /// <summary>
+    /// Finds a user by user ID.
+    /// </summary>
+    Task<User?> FindByUserIdAsync(UserId userId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Finds a user by login ID.
     /// </summary>
