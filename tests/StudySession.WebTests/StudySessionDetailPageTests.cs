@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using StudySession.Application.StudySessions;
 using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
@@ -23,7 +24,7 @@ public class StudySessionDetailPageTests
             new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Onsite, "実機で参加します。", DateTime.UtcNow, DateTime.UtcNow),
             new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Absent, "欠席予定です。", DateTime.UtcNow, DateTime.UtcNow));
         var repository = new FakeStudySessionRepository(CreateSession(sessionId, StudySessionFormat.OnsiteOnly));
-        var pageModel = new DetailModel(repository, participantRepo)
+        var pageModel = new DetailModel(repository, participantRepo, new StudySessionTimeZone())
         {
             Id = sessionId.ToString(),
             PageContext = CreatePageContext(UserId.New()),
@@ -48,7 +49,7 @@ public class StudySessionDetailPageTests
         var session = CreateSession(StudySessionId.New(), StudySessionFormat.OnsiteOnly);
         var repository = new FakeStudySessionRepository(session);
         var participantRepo = new FakeStudySessionParticipationRepository();
-        var pageModel = new DetailModel(repository, participantRepo)
+        var pageModel = new DetailModel(repository, participantRepo, new StudySessionTimeZone())
         {
             Id = session.SessionId.ToString(),
             AttendanceStatusValue = AttendanceStatus.Remote.ToString(),
@@ -73,7 +74,7 @@ public class StudySessionDetailPageTests
         var session = CreateSession(StudySessionId.New(), StudySessionFormat.Hybrid);
         var repository = new FakeStudySessionRepository(session);
         var participantRepo = new FakeStudySessionParticipationRepository();
-        var pageModel = new DetailModel(repository, participantRepo)
+        var pageModel = new DetailModel(repository, participantRepo, new StudySessionTimeZone())
         {
             Id = session.SessionId.ToString(),
             AttendanceStatusValue = AttendanceStatus.Onsite.ToString(),
@@ -99,7 +100,7 @@ public class StudySessionDetailPageTests
         var repository = new FakeStudySessionRepository(CreateSession(sessionId, StudySessionFormat.OnsiteOnly));
         var participantRepo = new FakeStudySessionParticipationRepository(
             new StudySessionParticipation(sessionId, userId, AttendanceStatus.Onsite, "実機で参加します。", DateTime.UtcNow, DateTime.UtcNow, "開発 太郎", "dev"));
-        var pageModel = new DetailModel(repository, participantRepo)
+        var pageModel = new DetailModel(repository, participantRepo, new StudySessionTimeZone())
         {
             Id = sessionId.ToString(),
             PageContext = CreatePageContext(UserId.New()),
