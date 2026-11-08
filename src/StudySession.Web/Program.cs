@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.CookiePolicy;
 using StudySession.Application.Abstractions.Security;
 using StudySession.Application.AttendanceSummary;
 using StudySession.Application.Authentication;
+using StudySession.Application.StudySessions;
+using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
 using StudySession.Infrastructure.Data;
 using StudySession.Infrastructure.QueryServices;
@@ -50,9 +52,11 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 
 builder.Services.AddScoped<IStudySessionDbConnectionFactory, StudySessionDbConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStudySessionRepository, StudySessionRepository>();
 builder.Services.AddScoped<IStudySessionParticipationSummaryQueryService, StudySessionParticipationSummaryQueryService>();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<LoginUseCase>();
+builder.Services.AddScoped<CreateStudySessionUseCase>();
 builder.Services.AddScoped<GetAttendanceSummaryUseCase>();
 
 var app = builder.Build();
