@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using StudySession.Application.StudySessions;
 using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
@@ -17,11 +18,16 @@ public sealed class DetailModel : PageModel
 {
     private readonly IStudySessionRepository _studySessionRepository;
     private readonly IStudySessionParticipationRepository _studySessionParticipationRepository;
+    private readonly StudySessionTimeZone _studySessionTimeZone;
 
-    public DetailModel(IStudySessionRepository studySessionRepository, IStudySessionParticipationRepository studySessionParticipationRepository)
+    public DetailModel(
+        IStudySessionRepository studySessionRepository,
+        IStudySessionParticipationRepository studySessionParticipationRepository,
+        StudySessionTimeZone studySessionTimeZone)
     {
         _studySessionRepository = studySessionRepository ?? throw new ArgumentNullException(nameof(studySessionRepository));
         _studySessionParticipationRepository = studySessionParticipationRepository ?? throw new ArgumentNullException(nameof(studySessionParticipationRepository));
+        _studySessionTimeZone = studySessionTimeZone ?? throw new ArgumentNullException(nameof(studySessionTimeZone));
     }
 
     [BindProperty(SupportsGet = true)]
@@ -37,9 +43,11 @@ public sealed class DetailModel : PageModel
 
     public List<ParticipantRow> Participants { get; private set; } = [];
 
-    public bool IsAttendanceOpen => Session is not null && DateTime.UtcNow <= GetDeadline(Session);
+    public StudySessionTimeZone TimeZone => _studySessionTimeZone;
 
-    public string DeadlineDisplay => Session is null ? string.Empty : GetDeadline(Session).ToString("yyyy/MM/dd HH:mm");
+    public bool IsAttendanceOpen => Session is not null && _studySessionTimeZone.UtcNow <= GetDeadline(Session);
+
+    public string DeadlineDisplay => Session is null ? string.Empty : _studySessionTimeZone.ToDisplayJst(GetDeadline(Session)).ToString("yyyy/MM/dd HH:mm");
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -125,10 +133,11 @@ public sealed class DetailModel : PageModel
             return Page();
         }
 
+        var now = _studySessionTimeZone.UtcNow;
         var participation = await _studySessionParticipationRepository.FindBySessionAndUserIdAsync(Session.SessionId, currentUserId, cancellationToken)
-            ?? new StudySessionParticipation(Session.SessionId, currentUserId, attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+            ?? new StudySessionParticipation(Session.SessionId, currentUserId, attendanceStatus, normalizedComment, now, now);
 
-        participation.UpdateAttendance(attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+        participation.UpdateAttendance(attendanceStatus, normalizedComment, now, now);
         await _studySessionParticipationRepository.SaveAsync(participation, cancellationToken);
 
         return RedirectToPage("/StudySessions/List");
@@ -190,9 +199,10 @@ public sealed class DetailModel : PageModel
             && Enum.IsDefined(typeof(AttendanceStatus), status);
     }
 
-    private static DateTime GetDeadline(StudySessionEntity session)
+    private DateTime GetDeadline(StudySessionEntity session)
     {
-        return session.StartTime.ToUniversalTime().Date.AddDays(-1).AddHours(18);
+        var deadlineInJst = _studySessionTimeZone.ToDisplayJst(session.StartTime).Date.AddDays(-1).AddHours(18);
+        return _studySessionTimeZone.ToUtcFromBrowserJst(deadlineInJst);
     }
 
     public sealed record ParticipantRow(string LoginId, string DisplayName, AttendanceStatus Status, string Comment)
