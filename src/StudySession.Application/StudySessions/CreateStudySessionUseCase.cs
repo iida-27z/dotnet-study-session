@@ -32,7 +32,7 @@ public sealed class CreateStudySessionUseCase
             errors.Add((nameof(request.Title), "勉強会テーマは1〜200文字で入力してください。"));
         }
 
-        if (request.StartTime < DateTime.Now)
+        if (request.StartTime.ToUniversalTime() < DateTime.UtcNow)
         {
             errors.Add((nameof(request.StartTime), "開始日時は現在以降で入力してください。"));
         }
