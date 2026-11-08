@@ -1,4 +1,5 @@
 @page "/study_sessions"
+@using StudySession.Application.StudySessions
 @using StudySession.Domain.Participation
 @using StudySession.Domain.StudySessions
 @model ListModel
@@ -72,7 +73,7 @@
                 session.ParticipantsCountRemote >= session.CapacityRemote;
 
                         <tr>
-                            <td>@session.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>@Model.TimeZone.ToDisplayJst(session.StartTime).ToString("yyyy/MM/dd HH:mm")</td>
                             <td><a asp-page="/StudySessions/Detail" asp-route-id="@session.SessionId" class="link-reset"><span
                                 class="bold">@session.Title</span></a></td>
                                 <td>

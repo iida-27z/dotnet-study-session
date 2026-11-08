@@ -9,13 +9,15 @@ namespace StudySession.Application.StudySessions;
 public sealed class CreateStudySessionUseCase
 {
     private readonly IStudySessionRepository _studySessionRepository;
+    private readonly StudySessionTimeZone _studySessionTimeZone;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateStudySessionUseCase"/> class.
     /// </summary>
-    public CreateStudySessionUseCase(IStudySessionRepository studySessionRepository)
+    public CreateStudySessionUseCase(IStudySessionRepository studySessionRepository, StudySessionTimeZone studySessionTimeZone)
     {
-        _studySessionRepository = studySessionRepository;
+        _studySessionRepository = studySessionRepository ?? throw new ArgumentNullException(nameof(studySessionRepository));
+        _studySessionTimeZone = studySessionTimeZone ?? throw new ArgumentNullException(nameof(studySessionTimeZone));
     }
 
     /// <summary>
@@ -32,12 +34,15 @@ public sealed class CreateStudySessionUseCase
             errors.Add((nameof(request.Title), "勉強会テーマは1〜200文字で入力してください。"));
         }
 
-        if (request.StartTime.ToUniversalTime() < DateTime.UtcNow)
+        var startTimeUtc = _studySessionTimeZone.ToUtcFromBrowserJst(request.StartTime);
+        var endTimeUtc = _studySessionTimeZone.ToUtcFromBrowserJst(request.EndTime);
+
+        if (startTimeUtc < _studySessionTimeZone.UtcNow)
         {
             errors.Add((nameof(request.StartTime), "開始日時は現在以降で入力してください。"));
         }
 
-        if (request.EndTime <= request.StartTime)
+        if (endTimeUtc <= startTimeUtc)
         {
             errors.Add((nameof(request.EndTime), "終了日時は開始日時より後にしてください。"));
         }
@@ -81,13 +86,13 @@ public sealed class CreateStudySessionUseCase
             return CreateStudySessionResult.Failed([.. errors]);
         }
 
-        var now = DateTime.UtcNow;
+        var now = _studySessionTimeZone.UtcNow;
         var studySession = new StudySessionEntity(
             StudySessionId.New(),
             request.Title.Trim(),
             request.Description?.Trim() ?? string.Empty,
-            request.StartTime,
-            request.EndTime,
+            startTimeUtc,
+            endTimeUtc,
             request.Format,
             request.CapacityOnsite,
             request.CapacityRemote,
