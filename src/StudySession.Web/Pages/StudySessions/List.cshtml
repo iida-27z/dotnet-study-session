@@ -47,7 +47,8 @@
                             ? "対面出席"
                             : session.IsAttendingRemote == AttendanceStatus.Remote
                                 ? "リモート出席"
-                                : session.IsAttendingOnsite == AttendanceStatus.Absent || session.IsAttendingRemote == AttendanceStatus.Absent
+                                : session.IsAttendingOnsite == AttendanceStatus.Absent || session.IsAttendingRemote ==
+                AttendanceStatus.Absent
                                     ? "欠席"
                                     : "未回答";
 
@@ -65,45 +66,48 @@
                             ? "- (対象外)"
                             : $"{session.ParticipantsCountRemote} / {session.CapacityRemote} 名";
 
-                        var onsiteFull = session.Format != StudySessionFormat.RemoteOnly && session.CapacityOnsite > 0 && session.ParticipantsCountOnsite >= session.CapacityOnsite;
-                        var remoteFull = session.Format != StudySessionFormat.OnsiteOnly && session.CapacityRemote > 0 && session.ParticipantsCountRemote >= session.CapacityRemote;
+                        var onsiteFull = session.Format != StudySessionFormat.RemoteOnly && session.CapacityOnsite > 0 &&
+                session.ParticipantsCountOnsite >= session.CapacityOnsite;
+                        var remoteFull = session.Format != StudySessionFormat.OnsiteOnly && session.CapacityRemote > 0 &&
+                session.ParticipantsCountRemote >= session.CapacityRemote;
 
                         <tr>
                             <td>@session.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
-                            <td><a asp-page="/StudySessions/Detail" asp-route-id="@session.SessionId" class="link-reset"><span class="bold">@session.Title</span></a></td>
-                            <td>
-                                @if (session.Format == StudySessionFormat.RemoteOnly)
-                                {
-                                    <span class="color-gray">- (対象外)</span>
-                                }
-                                else
-                                {
-                                    <span>@onsiteDisplay</span>
-                                    @if (onsiteFull)
+                            <td><a asp-page="/StudySessions/Detail" asp-route-id="@session.SessionId" class="link-reset"><span
+                                class="bold">@session.Title</span></a></td>
+                                <td>
+                                    @if (session.Format == StudySessionFormat.RemoteOnly)
                                     {
-                                        <span class="color-red"> (満席)</span>
+                                        <span class="color-gray">- (対象外)</span>
                                     }
-                                }
-                            </td>
-                            <td>
-                                @if (session.Format == StudySessionFormat.OnsiteOnly)
-                                {
-                                    <span class="color-gray">- (対象外)</span>
-                                }
-                                else
-                                {
-                                    <span>@remoteDisplay</span>
-                                    @if (remoteFull)
+                                    else
                                     {
-                                        <span class="color-red"> (満席)</span>
+                                        <span>@onsiteDisplay</span>
+                                        @if (onsiteFull)
+                                        {
+                                            <span class="color-red"> (満席)</span>
+                                        }
                                     }
-                                }
-                            </td>
-                            <td><span class="badge @badgeClass">@currentStatus</span></td>
-                        </tr>
+                                </td>
+                                <td>
+                                    @if (session.Format == StudySessionFormat.OnsiteOnly)
+                                    {
+                                        <span class="color-gray">- (対象外)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@remoteDisplay</span>
+                                        @if (remoteFull)
+                                        {
+                                            <span class="color-red"> (満席)</span>
+                                        }
+                                    }
+                                </td>
+                                <td><span class="badge @badgeClass">@currentStatus</span></td>
+                            </tr>
+                        }
                     }
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+                </tbody>
+            </table>
+        </div>
+    </section>
