@@ -23,6 +23,63 @@ public sealed class StudySessionRepository : IStudySessionRepository
     }
 
     /// <inheritdoc/>
+    public async Task AddAsync(StudySessionEntity studySession, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(studySession);
+
+        const string sql = """
+            INSERT INTO study_sessions (
+                session_id,
+                title,
+                description,
+                starts_at,
+                ends_at,
+                format,
+                capacity_onsite,
+                capacity_remote,
+                created_by_user_id,
+                created_at,
+                updated_at
+            ) VALUES (
+                @SessionId,
+                @Title,
+                @Description,
+                @StartsAt,
+                @EndsAt,
+                @Format,
+                @CapacityOnsite,
+                @CapacityRemote,
+                @CreatedByUserId,
+                @CreatedAt,
+                @UpdatedAt
+            )
+        """;
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await connection.ExecuteAsync(
+            new CommandDefinition(sql, new
+            {
+                SessionId = studySession.SessionId.Value,
+                Title = studySession.Title,
+                Description = studySession.Description,
+                StartsAt = studySession.StartTime,
+                EndsAt = studySession.EndTime,
+                Format = studySession.Format.ToString(),
+                CapacityOnsite = studySession.CapacityOnsite,
+                CapacityRemote = studySession.CapacityRemote,
+                CreatedByUserId = studySession.CreatorUserId.Value,
+                CreatedAt = studySession.CreatedAt,
+                UpdatedAt = studySession.UpdatedAt,
+            }, cancellationToken: cancellationToken));
+    }
+
+    /// <inheritdoc/>
+    public Task SaveAsync(StudySessionEntity studySession, CancellationToken cancellationToken = default)
+    {
+        return AddAsync(studySession, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default)
     {
         const string sql = """
