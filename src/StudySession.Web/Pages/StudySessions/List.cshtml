@@ -1,0 +1,51 @@
+@page "/study_sessions"
+@model StudySession.Web.Pages.StudySessions.ListModel
+@{
+    ViewData["Title"] = "勉強会一覧";
+}
+
+<section class="common-container">
+    <h1 class="page-title">開催予定の社内勉強会一覧</h1>
+    <p class="page-lead">対面・リモートそれぞれの空き状況と、あなたの出欠を確認できます。</p>
+    <hr>
+
+    <div class="surface-panel">
+        <label for="keyword" class="bold">キーワードで検索</label>
+        <div class="button-row margin-top-05">
+            <input id="keyword" type="text" class="search-box" placeholder="勉強会名、概要で検索" />
+            <button type="button" class="btn-primary">検索</button>
+        </div>
+        <p class="helper-text">技術タグ検索は次フェーズで実装予定です。</p>
+    </div>
+
+    <h2 class="common-heading">検索結果</h2>
+    <div class="table-scroll-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>開催日時</th>
+                    <th>勉強会テーマ</th>
+                    <th>対面枠</th>
+                    <th>リモート枠</th>
+                    <th>あなたの出欠</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026/07/05 16:00</td>
+                    <td><span class="bold">Next.js 14 ハンズオン</span></td>
+                    <td>20 / 20 名 <span class="color-red">(満席)</span></td>
+                    <td>22 / 30 名</td>
+                    <td><span class="badge badge-info">リモート出席</span></td>
+                </tr>
+                <tr>
+                    <td>2026/07/12 17:00</td>
+                    <td><span class="bold">【ハンズオン】ネットワーク機器実機演習</span></td>
+                    <td>15 / 20 名</td>
+                    <td class="color-gray">- (対象外)</td>
+                    <td><span class="badge badge-warning">未回答</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

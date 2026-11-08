@@ -32,6 +32,16 @@
           "Microsoft.Extensions.Options": "10.0.14"
         }
       },
+      "BCrypt.Net-Next": {
+        "type": "Transitive",
+        "resolved": "4.0.3",
+        "contentHash": "W+U9WvmZQgi5cX6FS5GDtDoPzUCV4LkBLkywq/kRZhuDwcbavOzcDAr3LXJFqHUi952Yj3LEYoWW0jbEUQChsA=="
+      },
+      "Dapper": {
+        "type": "Transitive",
+        "resolved": "2.1.66",
+        "contentHash": "/q77jUgDOS+bzkmk3Vy9SiWMaetTw+NOoPAV0xPBsGVAyljd5S6P+4RUW7R3ZUGGr9lDRyPKgAMj2UAOwvqZYw=="
+      },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
         "resolved": "10.0.14",
@@ -282,6 +292,14 @@
         "resolved": "10.0.14",
         "contentHash": "1bbZqqCJTPba3inTADExbp/9PsGVyvGOX3zr6tFr7ySCgVkX9Lpw7BV0TizktNItd3SsbUu1sQfSAYm1GZMoNw=="
       },
+      "Npgsql": {
+        "type": "Transitive",
+        "resolved": "10.0.2",
+        "contentHash": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
+        }
+      },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
         "resolved": "10.0.14",
@@ -299,6 +317,10 @@
       "studysession.infrastructure": {
         "type": "Project",
         "dependencies": {
+          "BCrypt.Net-Next": "[4.0.3, )",
+          "Dapper": "[2.1.66, )",
+          "Microsoft.Extensions.Configuration.Abstractions": "[10.0.0, )",
+          "Npgsql": "[10.0.2, )",
           "StudySession.Application": "[1.0.0, )",
           "StudySession.Domain": "[1.0.0, )"
         }
