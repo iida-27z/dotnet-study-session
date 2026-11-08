@@ -79,7 +79,7 @@ public sealed class LoginModel : PageModel
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, result.UserId!.Value.ToString()),
+            new(ClaimTypes.NameIdentifier, result.UserId!.ToString()),
             new(ClaimTypes.Name, result.DisplayName!),
             new(ClaimTypes.Role, result.Role!),
             new("login_id", result.LoginId!),

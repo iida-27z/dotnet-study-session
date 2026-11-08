@@ -7,7 +7,7 @@ namespace StudySession.Application.Authentication;
 /// </summary>
 public sealed record LoginResult(
     bool IsSuccess,
-    Guid? UserId,
+    UserId? UserId,
     string? LoginId,
     string? DisplayName,
     string? Role,

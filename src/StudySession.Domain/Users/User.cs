@@ -9,7 +9,7 @@ public sealed class User
     /// Initializes a new instance of the <see cref="User"/> class.
     /// </summary>
     public User(
-        Guid userId,
+        UserId userId,
         string loginId,
         string displayName,
         string email,
@@ -17,10 +17,7 @@ public sealed class User
         UserRole role,
         bool isActive)
     {
-        if (userId == Guid.Empty)
-        {
-            throw new ArgumentException("User ID must not be empty.", nameof(userId));
-        }
+        ArgumentNullException.ThrowIfNull(userId);
 
         LoginId = NormalizeRequiredString(loginId, 64, nameof(loginId));
         DisplayName = NormalizeRequiredString(displayName, 100, nameof(displayName));
@@ -35,7 +32,7 @@ public sealed class User
     /// <summary>
     /// Gets the user ID.
     /// </summary>
-    public Guid UserId { get; }
+    public UserId UserId { get; }
 
     /// <summary>
     /// Gets the login ID.
