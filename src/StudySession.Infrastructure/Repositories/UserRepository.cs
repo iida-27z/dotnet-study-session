@@ -50,7 +50,7 @@ public sealed class UserRepository : IUserRepository
         }
 
         return new User(
-            row.UserId,
+            UserId.From(row.UserId),
             row.LoginId,
             row.DisplayName,
             row.Email,
