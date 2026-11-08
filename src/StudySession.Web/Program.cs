@@ -5,6 +5,7 @@ using StudySession.Application.Abstractions.Security;
 using StudySession.Application.AttendanceSummary;
 using StudySession.Application.Authentication;
 using StudySession.Application.StudySessions;
+using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
 using StudySession.Infrastructure.Data;
@@ -30,7 +31,7 @@ builder.Services
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/Error403";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.SlidingExpiration = true;
@@ -47,12 +48,13 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.HttpOnly = HttpOnlyPolicy.Always;
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
-    options.Secure = CookieSecurePolicy.Always;
+    options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddScoped<IStudySessionDbConnectionFactory, StudySessionDbConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStudySessionRepository, StudySessionRepository>();
+builder.Services.AddScoped<IStudySessionParticipationRepository, StudySessionParticipationRepository>();
 builder.Services.AddScoped<IStudySessionParticipationSummaryQueryService, StudySessionParticipationSummaryQueryService>();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<LoginUseCase>();
@@ -64,6 +66,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
 app.UseExceptionHandler("/Error500");
@@ -89,7 +92,6 @@ app.UseStatusCodePages(async context =>
     }
 });
 
-app.UseHttpsRedirection();
 app.UseCookiePolicy();
 app.UseRouting();
 app.UseAuthentication();
