@@ -11,6 +11,6 @@ public interface IStudySessionParticipationSummaryQueryService
     /// <param name="fromDate">取得対象の開始日付</param>
     /// <param name="userId">対象のユーザーID</param>
     /// <returns>勉強会の参加状況サマリーのリスト</returns>
-    Task<List<StudySessionParticipationSummaryDto>> GetParticipationSummaryAsync(DateTime fromDate, UserId userId, CancellationToken cancellationToken);
+    Task<List<StudySessionParticipationSummaryDto>> GetParticipationSummaryAsync(DateTimeOffset fromDate, UserId userId, CancellationToken cancellationToken);
 
 }

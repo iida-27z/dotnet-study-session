@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.Extensions.Options;
 using StudySession.Application.Abstractions.Security;
 using StudySession.Application.AttendanceSummary;
 using StudySession.Application.Authentication;
@@ -12,6 +13,7 @@ using StudySession.Infrastructure.Data;
 using StudySession.Infrastructure.QueryServices;
 using StudySession.Infrastructure.Repositories;
 using StudySession.Infrastructure.Security;
+using StudySession.Web.Time;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +59,9 @@ builder.Services.AddScoped<IStudySessionRepository, StudySessionRepository>();
 builder.Services.AddScoped<IStudySessionParticipationRepository, StudySessionParticipationRepository>();
 builder.Services.AddScoped<IStudySessionParticipationSummaryQueryService, StudySessionParticipationSummaryQueryService>();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.Configure<TimeZoneSettings>(builder.Configuration.GetSection(TimeZoneSettings.SectionName));
+builder.Services.AddSingleton<IDateTimeConverter, PresentationDateTimeConverter>();
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<CreateStudySessionUseCase>();
 builder.Services.AddScoped<GetAttendanceSummaryUseCase>();

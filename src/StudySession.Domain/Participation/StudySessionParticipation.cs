@@ -24,8 +24,8 @@ public sealed class StudySessionParticipation
         UserId userId,
         AttendanceStatus attendanceStatus,
         string? comment,
-        DateTime? respondedAt,
-        DateTime updatedAt,
+        DateTimeOffset? respondedAt,
+        DateTimeOffset updatedAt,
         string? displayName = null,
         string? loginId = null)
     {
@@ -74,12 +74,12 @@ public sealed class StudySessionParticipation
     /// <summary>
     /// 回答日時を取得または設定します。
     /// </summary>
-    public DateTime? RespondedAt { get; private set; }
+    public DateTimeOffset? RespondedAt { get; private set; }
 
     /// <summary>
     /// 更新日時を取得または設定します。
     /// </summary>
-    public DateTime UpdatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
 
     /// <summary>
     /// 表示名を取得または設定します。
@@ -96,9 +96,10 @@ public sealed class StudySessionParticipation
     /// </summary>
     /// <param name="attendanceStatus">更新後の出欠状況。</param>
     /// <param name="comment">更新後のコメント。</param>
-    /// <param name="respondedAt">回答日時。</param>
-    /// <param name="updatedAt">更新日時。</param>
-    public void UpdateAttendance(AttendanceStatus attendanceStatus, string? comment, DateTime? respondedAt, DateTime? updatedAt = null)
+    /// <param name="now">更新時刻。</param>
+    /// <param name="respondedAt">回答日時。未指定時は <paramref name="now"/> を利用します。</param>
+    /// <param name="updatedAt">更新日時。未指定時は <paramref name="now"/> を利用します。</param>
+    public void UpdateAttendance(AttendanceStatus attendanceStatus, string? comment, DateTimeOffset now, DateTimeOffset? respondedAt = null, DateTimeOffset? updatedAt = null)
     {
         if (!Enum.IsDefined(typeof(AttendanceStatus), attendanceStatus))
         {
@@ -107,8 +108,8 @@ public sealed class StudySessionParticipation
 
         AttendanceStatus = attendanceStatus;
         Comment = NormalizeOptionalString(comment, 500, nameof(comment));
-        RespondedAt = respondedAt ?? DateTime.UtcNow;
-        UpdatedAt = updatedAt ?? DateTime.UtcNow;
+        RespondedAt = respondedAt ?? now;
+        UpdatedAt = updatedAt ?? now;
     }
 
     /// <summary>

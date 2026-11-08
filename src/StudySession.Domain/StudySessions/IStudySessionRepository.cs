@@ -26,7 +26,7 @@ public interface IStudySessionRepository
     /// <param name="startTime">検索開始日時。</param>
     /// <param name="cancellationToken">キャンセルトークン。</param>
     /// <returns>条件に一致する勉強会の一覧。</returns>
-    Task<List<StudySession>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default);
+    Task<List<StudySession>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTimeOffset startTime, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 勉強会を保存します。

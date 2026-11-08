@@ -62,14 +62,14 @@ public sealed class StudySessionRepository : IStudySessionRepository
                 SessionId = studySession.SessionId.Value,
                 Title = studySession.Title,
                 Description = studySession.Description,
-                StartsAt = studySession.StartTime,
-                EndsAt = studySession.EndTime,
+                StartsAt = studySession.StartTime.UtcDateTime,
+                EndsAt = studySession.EndTime.UtcDateTime,
                 Format = studySession.Format.ToString(),
                 CapacityOnsite = studySession.CapacityOnsite,
                 CapacityRemote = studySession.CapacityRemote,
                 CreatedByUserId = studySession.CreatorUserId.Value,
-                CreatedAt = studySession.CreatedAt,
-                UpdatedAt = studySession.UpdatedAt,
+                CreatedAt = studySession.CreatedAt.UtcDateTime,
+                UpdatedAt = studySession.UpdatedAt.UtcDateTime,
             }, cancellationToken: cancellationToken));
     }
 
@@ -80,7 +80,7 @@ public sealed class StudySessionRepository : IStudySessionRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default)
+    public async Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTimeOffset startTime, CancellationToken cancellationToken = default)
     {
         const string sql = """
             SELECT
@@ -102,7 +102,7 @@ public sealed class StudySessionRepository : IStudySessionRepository
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<StudySessionRow>(
-            new CommandDefinition(sql, new { StartTime = startTime }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { StartTime = startTime.UtcDateTime }, cancellationToken: cancellationToken));
 
         return [.. rows.Select(MapToDomainEntity)];
     }
@@ -150,14 +150,27 @@ public sealed class StudySessionRepository : IStudySessionRepository
             StudySessionId.From(row.StudySessionId),
             row.Title,
             row.Description ?? string.Empty,
-            row.StartsAt,
-            row.EndsAt,
+            ToUtcDateTimeOffset(row.StartsAt),
+            ToUtcDateTimeOffset(row.EndsAt),
             format,
             row.CapacityOnsite,
             row.CapacityRemote,
             UserId.From(row.CreatedByUserId),
-            row.CreatedAt,
-            row.UpdatedAt);
+            ToUtcDateTimeOffset(row.CreatedAt),
+            ToUtcDateTimeOffset(row.UpdatedAt));
+    }
+
+    private static DateTimeOffset ToUtcDateTimeOffset(DateTime value)
+    {
+        var utcValue = value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => TimeZoneInfo.ConvertTimeToUtc(value),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            _ => value,
+        };
+
+        return new DateTimeOffset(utcValue, TimeSpan.Zero);
     }
 
     private sealed record StudySessionRow(

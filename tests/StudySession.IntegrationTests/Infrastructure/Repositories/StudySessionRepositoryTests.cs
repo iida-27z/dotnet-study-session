@@ -38,7 +38,7 @@ public class StudySessionRepositoryTests : IClassFixture<PostgresTestContainerFi
     public async Task FindByStartTimeOnOrAfterOrderByStartTimeAsync_WithStartTime_ReturnsOrderedSessions()
     {
         // arrange
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         // act
         var sessions = await _repository.FindByStartTimeOnOrAfterOrderByStartTimeAsync(now);

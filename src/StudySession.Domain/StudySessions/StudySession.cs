@@ -26,14 +26,14 @@ public sealed class StudySession
         StudySessionId sessionId,
         string title,
         string description,
-        DateTime startTime,
-        DateTime endTime,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
         StudySessionFormat format,
         int capacityOnsite,
         int capacityRemote,
         UserId creatorUserId,
-        DateTime createdAt,
-        DateTime updatedAt)
+        DateTimeOffset createdAt,
+        DateTimeOffset updatedAt)
     {
         ArgumentNullException.ThrowIfNull(sessionId);
         ArgumentNullException.ThrowIfNull(creatorUserId);
@@ -94,12 +94,12 @@ public sealed class StudySession
     /// <summary>
     /// 開始日時を取得します。
     /// </summary>
-    public DateTime StartTime { get; }
+    public DateTimeOffset StartTime { get; }
 
     /// <summary>
     /// 終了日時を取得します。
     /// </summary>
-    public DateTime EndTime { get; }
+    public DateTimeOffset EndTime { get; }
 
     /// <summary>
     /// 開催形式を取得します。
@@ -124,12 +124,12 @@ public sealed class StudySession
     /// <summary>
     /// 作成日時を取得します。
     /// </summary>
-    public DateTime CreatedAt { get; }
+    public DateTimeOffset CreatedAt { get; }
 
     /// <summary>
     /// 更新日時を取得します。
     /// </summary>
-    public DateTime UpdatedAt { get; }
+    public DateTimeOffset UpdatedAt { get; }
 
     private static string NormalizeRequiredString(string? value, int maxLength, string paramName)
     {

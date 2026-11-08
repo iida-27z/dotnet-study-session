@@ -3,10 +3,13 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
+using StudySession.Application.StudySessions;
 using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
 using StudySession.Web.Pages.StudySessions;
+using StudySession.Web.Time;
 using StudySessionEntity = StudySession.Domain.StudySessions.StudySession;
 
 namespace StudySession.WebTests;
@@ -19,11 +22,13 @@ public class StudySessionDetailPageTests
     {
         // arrange
         var sessionId = StudySessionId.New();
+        var now = DateTimeOffset.UtcNow;
         var participantRepo = new FakeStudySessionParticipationRepository(
-            new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Onsite, "実機で参加します。", DateTime.UtcNow, DateTime.UtcNow),
-            new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Absent, "欠席予定です。", DateTime.UtcNow, DateTime.UtcNow));
+            new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Onsite, "実機で参加します。", now, now),
+            new StudySessionParticipation(sessionId, UserId.New(), AttendanceStatus.Absent, "欠席予定です。", now, now));
         var repository = new FakeStudySessionRepository(CreateSession(sessionId, StudySessionFormat.OnsiteOnly));
-        var pageModel = new DetailModel(repository, participantRepo)
+        var timeProvider = new FakeDateTimeProvider(now);
+        var pageModel = new DetailModel(repository, participantRepo, CreateDateTimeConverter(), timeProvider)
         {
             Id = sessionId.ToString(),
             PageContext = CreatePageContext(UserId.New()),
@@ -48,7 +53,8 @@ public class StudySessionDetailPageTests
         var session = CreateSession(StudySessionId.New(), StudySessionFormat.OnsiteOnly);
         var repository = new FakeStudySessionRepository(session);
         var participantRepo = new FakeStudySessionParticipationRepository();
-        var pageModel = new DetailModel(repository, participantRepo)
+        var timeProvider = new FakeDateTimeProvider(DateTimeOffset.UtcNow);
+        var pageModel = new DetailModel(repository, participantRepo, CreateDateTimeConverter(), timeProvider)
         {
             Id = session.SessionId.ToString(),
             AttendanceStatusValue = AttendanceStatus.Remote.ToString(),
@@ -73,7 +79,8 @@ public class StudySessionDetailPageTests
         var session = CreateSession(StudySessionId.New(), StudySessionFormat.Hybrid);
         var repository = new FakeStudySessionRepository(session);
         var participantRepo = new FakeStudySessionParticipationRepository();
-        var pageModel = new DetailModel(repository, participantRepo)
+        var timeProvider = new FakeDateTimeProvider(DateTimeOffset.UtcNow);
+        var pageModel = new DetailModel(repository, participantRepo, CreateDateTimeConverter(), timeProvider)
         {
             Id = session.SessionId.ToString(),
             AttendanceStatusValue = AttendanceStatus.Onsite.ToString(),
@@ -96,10 +103,12 @@ public class StudySessionDetailPageTests
         // arrange
         var sessionId = StudySessionId.New();
         var userId = UserId.New();
+        var now = DateTimeOffset.UtcNow;
         var repository = new FakeStudySessionRepository(CreateSession(sessionId, StudySessionFormat.OnsiteOnly));
         var participantRepo = new FakeStudySessionParticipationRepository(
-            new StudySessionParticipation(sessionId, userId, AttendanceStatus.Onsite, "実機で参加します。", DateTime.UtcNow, DateTime.UtcNow, "開発 太郎", "dev"));
-        var pageModel = new DetailModel(repository, participantRepo)
+            new StudySessionParticipation(sessionId, userId, AttendanceStatus.Onsite, "実機で参加します。", now, now, "開発 太郎", "dev"));
+        var timeProvider = new FakeDateTimeProvider(now);
+        var pageModel = new DetailModel(repository, participantRepo, CreateDateTimeConverter(), timeProvider)
         {
             Id = sessionId.ToString(),
             PageContext = CreatePageContext(UserId.New()),
@@ -113,6 +122,9 @@ public class StudySessionDetailPageTests
         var participant = Assert.Single(pageModel.Participants);
         Assert.Equal("dev", participant.LoginId);
     }
+
+    private static IDateTimeConverter CreateDateTimeConverter()
+        => new PresentationDateTimeConverter(new OptionsWrapper<TimeZoneSettings>(new TimeZoneSettings { DefaultTimeZoneId = "Asia/Tokyo" }));
 
     private static PageContext CreatePageContext(UserId userId)
     {
@@ -131,18 +143,19 @@ public class StudySessionDetailPageTests
 
     private static StudySessionEntity CreateSession(StudySessionId sessionId, StudySessionFormat format = StudySessionFormat.Hybrid)
     {
+        var now = DateTimeOffset.UtcNow;
         return new StudySessionEntity(
             sessionId,
             "ネットワーク実習",
             "社内ネットワーク構築の基礎を学ぶハンズオンセミナーです。",
-            new DateTime(2026, 12, 12, 17, 0, 0, DateTimeKind.Utc),
-            new DateTime(2026, 12, 12, 19, 0, 0, DateTimeKind.Utc),
+            new DateTimeOffset(2026, 12, 12, 17, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 12, 12, 19, 0, 0, TimeSpan.Zero),
             format,
             format == StudySessionFormat.RemoteOnly ? 0 : 20,
             format == StudySessionFormat.OnsiteOnly ? 0 : 30,
             UserId.New(),
-            DateTime.UtcNow,
-            DateTime.UtcNow);
+            now,
+            now);
     }
 
     private sealed class FakeStudySessionRepository : IStudySessionRepository
@@ -160,11 +173,23 @@ public class StudySessionDetailPageTests
         public Task<StudySessionEntity?> FindByStudySessionIdAsync(StudySessionId studySessionId, CancellationToken cancellationToken = default)
             => Task.FromResult(studySessionId == _session.SessionId ? _session : null);
 
-        public Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default)
+        public Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTimeOffset startTime, CancellationToken cancellationToken = default)
             => Task.FromResult(new List<StudySessionEntity> { _session });
 
         public Task SaveAsync(StudySessionEntity studySession, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+    }
+
+    private sealed class FakeDateTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _utcNow;
+
+        public FakeDateTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow() => _utcNow;
     }
 
     private sealed class FakeStudySessionParticipationRepository : IStudySessionParticipationRepository

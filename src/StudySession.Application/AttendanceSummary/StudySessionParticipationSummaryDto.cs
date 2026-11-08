@@ -15,7 +15,7 @@ public sealed record StudySessionParticipationSummaryDto(
     /// <summary>
     /// 開始日時
     /// </summary>
-    DateTime StartTime,
+    DateTimeOffset StartTime,
     /// <summary>
     /// タイトル
     /// </summary>
