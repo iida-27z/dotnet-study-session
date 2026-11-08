@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using StudySession.Application.StudySessions;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
 using StudySession.Web.Pages.StudySessions;
+using StudySessionEntity = StudySession.Domain.StudySessions.StudySession;
 
 namespace StudySession.WebTests;
 
@@ -86,21 +88,21 @@ public class StudySessionCreatePageTests
 
     private sealed class FakeStudySessionRepository : IStudySessionRepository
     {
-        public List<StudySession> SavedSessions { get; } = [];
+        public List<StudySessionEntity> SavedSessions { get; } = [];
 
-        public Task<StudySession?> FindByStudySessionIdAsync(StudySessionId studySessionId, CancellationToken cancellationToken = default)
-            => Task.FromResult<StudySession?>(null);
+        public Task<StudySessionEntity?> FindByStudySessionIdAsync(StudySessionId studySessionId, CancellationToken cancellationToken = default)
+            => Task.FromResult<StudySessionEntity?>(null);
 
-        public Task<List<StudySession>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default)
-            => Task.FromResult(new List<StudySession>());
+        public Task<List<StudySessionEntity>> FindByStartTimeOnOrAfterOrderByStartTimeAsync(DateTime startTime, CancellationToken cancellationToken = default)
+            => Task.FromResult(new List<StudySessionEntity>());
 
-        public Task AddAsync(StudySession studySession, CancellationToken cancellationToken = default)
+        public Task AddAsync(StudySessionEntity studySession, CancellationToken cancellationToken = default)
         {
             SavedSessions.Add(studySession);
             return Task.CompletedTask;
         }
 
-        public Task SaveAsync(StudySession studySession, CancellationToken cancellationToken = default)
+        public Task SaveAsync(StudySessionEntity studySession, CancellationToken cancellationToken = default)
             => AddAsync(studySession, cancellationToken);
     }
 }
