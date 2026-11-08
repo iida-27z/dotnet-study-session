@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
+using StudySession.Domain.Users;
 using StudySessionEntity = StudySession.Domain.StudySessions.StudySession;
 
 namespace StudySession.Web.Pages.StudySessions;
@@ -14,10 +16,12 @@ namespace StudySession.Web.Pages.StudySessions;
 public sealed class DetailModel : PageModel
 {
     private readonly IStudySessionRepository _studySessionRepository;
+    private readonly IStudySessionParticipationRepository _studySessionParticipationRepository;
 
-    public DetailModel(IStudySessionRepository studySessionRepository)
+    public DetailModel(IStudySessionRepository studySessionRepository, IStudySessionParticipationRepository studySessionParticipationRepository)
     {
-        _studySessionRepository = studySessionRepository;
+        _studySessionRepository = studySessionRepository ?? throw new ArgumentNullException(nameof(studySessionRepository));
+        _studySessionParticipationRepository = studySessionParticipationRepository ?? throw new ArgumentNullException(nameof(studySessionParticipationRepository));
     }
 
     [BindProperty(SupportsGet = true)]
@@ -46,8 +50,29 @@ public sealed class DetailModel : PageModel
         }
 
         Session = session;
-        Participants = BuildParticipants(session);
-        AttendanceStatusValue = AttendanceStatus.Unanswered.ToString();
+        Participants = await LoadParticipantsAsync(session, cancellationToken);
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is not null)
+        {
+            var participation = await _studySessionParticipationRepository.FindBySessionAndUserIdAsync(session.SessionId, currentUserId, cancellationToken);
+            if (participation is not null)
+            {
+                AttendanceStatusValue = participation.AttendanceStatus.ToString();
+                Comment = participation.Comment;
+            }
+            else
+            {
+                AttendanceStatusValue = AttendanceStatus.Unanswered.ToString();
+                Comment = string.Empty;
+            }
+        }
+        else
+        {
+            AttendanceStatusValue = AttendanceStatus.Unanswered.ToString();
+            Comment = string.Empty;
+        }
+
         return Page();
     }
 
@@ -60,14 +85,21 @@ public sealed class DetailModel : PageModel
         }
 
         Session = session;
-        Participants = BuildParticipants(session);
+        Participants = await LoadParticipantsAsync(session, cancellationToken);
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+        {
+            return Unauthorized();
+        }
 
         if (!TryParseAttendanceStatus(AttendanceStatusValue, out var attendanceStatus))
         {
             ModelState.AddModelError(nameof(AttendanceStatusValue), "出欠ステータスが正しくありません。");
         }
 
-        if (!string.IsNullOrWhiteSpace(Comment) && Comment.Length > 500)
+        var normalizedComment = string.IsNullOrWhiteSpace(Comment) ? string.Empty : Comment.Trim();
+        if (normalizedComment.Length > 500)
         {
             ModelState.AddModelError(nameof(Comment), "コメントは500文字以内で入力してください。");
         }
@@ -89,10 +121,34 @@ public sealed class DetailModel : PageModel
 
         if (!ModelState.IsValid)
         {
+            Comment = normalizedComment;
             return Page();
         }
 
+        var participation = await _studySessionParticipationRepository.FindBySessionAndUserIdAsync(Session.SessionId, currentUserId, cancellationToken)
+            ?? new StudySessionParticipation(Session.SessionId, currentUserId, attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+
+        participation.UpdateAttendance(attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+        await _studySessionParticipationRepository.SaveAsync(participation, cancellationToken);
+
         return RedirectToPage("/StudySessions/List");
+    }
+
+    private async Task<List<ParticipantRow>> LoadParticipantsAsync(StudySessionEntity session, CancellationToken cancellationToken)
+    {
+        var participants = await _studySessionParticipationRepository.FindBySessionIdAsync(session.SessionId, cancellationToken);
+        if (participants.Count == 0)
+        {
+            return BuildParticipants(session);
+        }
+
+        return participants
+            .Select(participant => new ParticipantRow(
+                participant.LoginId,
+                string.IsNullOrWhiteSpace(participant.DisplayName) ? participant.LoginId : participant.DisplayName,
+                participant.AttendanceStatus,
+                participant.Comment))
+            .ToList();
     }
 
     private async Task<StudySessionEntity?> LoadSessionAsync(CancellationToken cancellationToken)
@@ -103,6 +159,23 @@ public sealed class DetailModel : PageModel
         }
 
         return await _studySessionRepository.FindByStudySessionIdAsync(StudySessionId.From(sessionIdGuid), cancellationToken);
+    }
+
+    private UserId? GetCurrentUserId()
+    {
+        var principal = User;
+        if (principal is null || principal.Identity is null || !principal.Identity.IsAuthenticated)
+        {
+            return null;
+        }
+
+        var userIdClaim = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out var userIdValue))
+        {
+            return null;
+        }
+
+        return UserId.From(userIdValue);
     }
 
     private static bool TryParseAttendanceStatus(string? value, out AttendanceStatus status)
@@ -126,19 +199,22 @@ public sealed class DetailModel : PageModel
     {
         var participantRows = new List<ParticipantRow>
         {
-            new("USR001", "開発 太郎", AttendanceStatus.Onsite, "実機セッティングのお手伝い可能です"),
-            new("USR005", "デザイン 美子", AttendanceStatus.Onsite, "業務都合のため16:30頃から途中参加します"),
-            new("USR012", "運用 三郎", AttendanceStatus.Absent, "緊急メンテナンス作業のため欠席します"),
+            new("dev", "開発 太郎", AttendanceStatus.Onsite, "実機セッティングのお手伝い可能です"),
+            new("designer", "デザイン 美子", AttendanceStatus.Onsite, "業務都合のため16:30頃から途中参加します"),
+            new("ops", "運用 三郎", AttendanceStatus.Absent, "緊急メンテナンス作業のため欠席します"),
         };
 
         if (session.Format == StudySessionFormat.RemoteOnly)
         {
-            participantRows[0] = new ParticipantRow("USR001", "開発 太郎", AttendanceStatus.Remote, "リモートで参加します");
-            participantRows[1] = new ParticipantRow("USR005", "デザイン 美子", AttendanceStatus.Remote, "オンラインで参加予定です");
+            participantRows[0] = new ParticipantRow("dev", "開発 太郎", AttendanceStatus.Remote, "リモートで参加します");
+            participantRows[1] = new ParticipantRow("designer", "デザイン 美子", AttendanceStatus.Remote, "オンラインで参加予定です");
         }
 
         return participantRows;
     }
 
-    public sealed record ParticipantRow(string UserId, string DisplayName, AttendanceStatus Status, string Comment);
+    public sealed record ParticipantRow(string LoginId, string DisplayName, AttendanceStatus Status, string Comment)
+    {
+        public string UserId => LoginId;
+    }
 }
