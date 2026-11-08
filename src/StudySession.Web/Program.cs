@@ -57,6 +57,8 @@ builder.Services.AddScoped<IStudySessionRepository, StudySessionRepository>();
 builder.Services.AddScoped<IStudySessionParticipationRepository, StudySessionParticipationRepository>();
 builder.Services.AddScoped<IStudySessionParticipationSummaryQueryService, StudySessionParticipationSummaryQueryService>();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<StudySessionTimeZone>();
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<CreateStudySessionUseCase>();
 builder.Services.AddScoped<GetAttendanceSummaryUseCase>();
