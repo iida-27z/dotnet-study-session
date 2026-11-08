@@ -1,26 +1,93 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.CookiePolicy;
+using StudySession.Application.Abstractions.Security;
+using StudySession.Application.Authentication;
+using StudySession.Domain.Users;
+using StudySession.Infrastructure.Data;
+using StudySession.Infrastructure.Repositories;
+using StudySession.Infrastructure.Security;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/");
+    options.Conventions.AllowAnonymousToPage("/Login");
+    options.Conventions.AllowAnonymousToPage("/Error403");
+    options.Conventions.AllowAnonymousToPage("/Error404");
+    options.Conventions.AllowAnonymousToPage("/Error500");
+});
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/Error403";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.HttpOnly = HttpOnlyPolicy.Always;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.Always;
+});
+
+builder.Services.AddScoped<IStudySessionDbConnectionFactory, StudySessionDbConnectionFactory>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddScoped<LoginUseCase>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+app.UseExceptionHandler("/Error500");
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    var path = context.HttpContext.Request.Path;
+
+    if (path.StartsWithSegments("/Error", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    if (response.StatusCode == StatusCodes.Status404NotFound)
+    {
+        response.Redirect("/Error404");
+        return;
+    }
+
+    if (response.StatusCode == StatusCodes.Status403Forbidden)
+    {
+        response.Redirect("/Error403");
+    }
+});
+
 app.UseHttpsRedirection();
-
+app.UseCookiePolicy();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

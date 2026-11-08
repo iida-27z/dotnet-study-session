@@ -1,0 +1,14 @@
+@page "/Error403"
+@model StudySession.Web.Pages.Error403Model
+@{
+    ViewData["Title"] = "権限エラー";
+}
+
+<section class="common-container auth-shell">
+    <h1 class="page-title">403 権限エラー</h1>
+    <p class="page-lead">この操作を実行する権限がありません。</p>
+    <hr>
+    <div class="button-row">
+        <a asp-page="/StudySessions/List" class="btn-primary">勉強会一覧へ戻る</a>
+    </div>
+</section>
