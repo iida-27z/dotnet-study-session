@@ -16,13 +16,15 @@ namespace StudySession.Web.Pages;
 public sealed class LoginModel : PageModel
 {
     private readonly LoginUseCase _loginUseCase;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LoginModel"/> class.
     /// </summary>
-    public LoginModel(LoginUseCase loginUseCase)
+    public LoginModel(LoginUseCase loginUseCase, TimeProvider timeProvider)
     {
         _loginUseCase = loginUseCase;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -95,7 +97,7 @@ public sealed class LoginModel : PageModel
             {
                 IsPersistent = false,
                 AllowRefresh = true,
-                IssuedUtc = DateTimeOffset.UtcNow,
+                IssuedUtc = _timeProvider.GetUtcNow(),
             });
 
         return RedirectToPage("/StudySessions/List");

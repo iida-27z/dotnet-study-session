@@ -23,7 +23,7 @@ public sealed class StudySessionParticipationSummaryQueryService : IStudySession
     }
 
     /// <inheritdoc/>
-    public async Task<List<StudySessionParticipationSummaryDto>> GetParticipationSummaryAsync(DateTime fromDate, UserId userId, CancellationToken cancellationToken)
+    public async Task<List<StudySessionParticipationSummaryDto>> GetParticipationSummaryAsync(DateTimeOffset fromDate, UserId userId, CancellationToken cancellationToken)
     {
         const string sql = """
             WITH participation_counts AS (
@@ -78,7 +78,7 @@ public sealed class StudySessionParticipationSummaryQueryService : IStudySession
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<StudySessionParticipationSummaryRow>(
             sql,
-            new { FromDate = fromDate, UserId = userId.Value }
+            new { FromDate = fromDate.UtcDateTime, UserId = userId.Value }
         );
 
         return rows.Select(MapToDto).ToList();
@@ -106,7 +106,7 @@ public sealed class StudySessionParticipationSummaryQueryService : IStudySession
 
         return new StudySessionParticipationSummaryDto(
             StudySessionId.From(row.SessionId),
-            row.StartTime,
+            ToUtcDateTimeOffset(row.StartTime),
             row.Title,
             format,
             row.CapacityOnsite,
@@ -116,6 +116,19 @@ public sealed class StudySessionParticipationSummaryQueryService : IStudySession
             UserId.From(row.UserId),
             attendingOnsite,
             attendingRemote);
+    }
+
+    private static DateTimeOffset ToUtcDateTimeOffset(DateTime value)
+    {
+        var utcValue = value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => TimeZoneInfo.ConvertTimeToUtc(value),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            _ => value,
+        };
+
+        return new DateTimeOffset(utcValue, TimeSpan.Zero);
     }
 
     private static AttendanceStatus ParseAttendanceStatus(string attendanceStatus)

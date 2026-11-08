@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using StudySession.Application.StudySessions;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
+using StudySession.Web.Time;
 
 namespace StudySession.Web.Pages.StudySessions;
 
@@ -16,10 +19,14 @@ namespace StudySession.Web.Pages.StudySessions;
 public sealed class CreateModel : PageModel
 {
     private readonly CreateStudySessionUseCase _createStudySessionUseCase;
+    private readonly IDateTimeConverter _dateTimeConverter;
 
-    public CreateModel(CreateStudySessionUseCase createStudySessionUseCase)
+    public CreateModel(
+        CreateStudySessionUseCase createStudySessionUseCase,
+        IDateTimeConverter dateTimeConverter)
     {
-        _createStudySessionUseCase = createStudySessionUseCase;
+        _createStudySessionUseCase = createStudySessionUseCase ?? throw new ArgumentNullException(nameof(createStudySessionUseCase));
+        _dateTimeConverter = dateTimeConverter ?? throw new ArgumentNullException(nameof(dateTimeConverter));
     }
 
     [BindProperty]
@@ -34,9 +41,15 @@ public sealed class CreateModel : PageModel
     public DateTime? StartTime { get; set; }
 
     [BindProperty]
+    public string? StartTimeUtcValue { get; set; }
+
+    [BindProperty]
     [Display(Name = "終了日時")]
     [Required(ErrorMessage = "終了日時は必須です。")]
     public DateTime? EndTime { get; set; }
+
+    [BindProperty]
+    public string? EndTimeUtcValue { get; set; }
 
     [BindProperty]
     [Display(Name = "開催形式")]
@@ -76,40 +89,13 @@ public sealed class CreateModel : PageModel
             return Page();
         }
 
-        if (!TryParseFormat(out var format))
-        {
-            ModelState.AddModelError(nameof(Format), "開催形式が正しくありません。");
-            return Page();
-        }
-
         if (StartTime is null || EndTime is null)
         {
             return Page();
         }
 
-        if (StartTime.Value.ToUniversalTime() < DateTime.UtcNow)
-        {
-            ModelState.AddModelError(nameof(StartTime), "開始日時は現在以降で入力してください。");
-        }
-
-        if (EndTime.Value <= StartTime.Value)
-        {
-            ModelState.AddModelError(nameof(EndTime), "終了日時は開始日時より後にしてください。");
-        }
-
-        switch (format)
-        {
-            case StudySessionFormat.OnsiteOnly when CapacityRemote != 0:
-                ModelState.AddModelError(nameof(CapacityRemote), "対面のみの開催ではリモート枠は0にしてください。");
-                break;
-            case StudySessionFormat.RemoteOnly when CapacityOnsite != 0:
-                ModelState.AddModelError(nameof(CapacityOnsite), "リモートのみの開催では対面枠は0にしてください。");
-                break;
-            case StudySessionFormat.Hybrid when CapacityOnsite < 1 || CapacityRemote < 1:
-                ModelState.AddModelError(nameof(CapacityOnsite), "ハイブリッド開催では対面枠とリモート枠を1以上にしてください。");
-                ModelState.AddModelError(nameof(CapacityRemote), "ハイブリッド開催では対面枠とリモート枠を1以上にしてください。");
-                break;
-        }
+        var startTimeUtc = ResolveDateTimeOffsetFromBrowserInput(StartTime, StartTimeUtcValue);
+        var endTimeUtc = ResolveDateTimeOffsetFromBrowserInput(EndTime, EndTimeUtcValue);
 
         if (!ModelState.IsValid)
         {
@@ -122,10 +108,16 @@ public sealed class CreateModel : PageModel
             return Forbid();
         }
 
+        if (!Enum.TryParse<StudySessionFormat>(Format, true, out var format) || !Enum.IsDefined(typeof(StudySessionFormat), format))
+        {
+            ModelState.AddModelError(nameof(Format), "開催形式が正しくありません。");
+            return Page();
+        }
+
         var request = new CreateStudySessionRequest(
             Title.Trim(),
-            StartTime.Value,
-            EndTime.Value,
+            startTimeUtc,
+            endTimeUtc,
             format,
             CapacityOnsite,
             CapacityRemote,
@@ -146,15 +138,19 @@ public sealed class CreateModel : PageModel
         return RedirectToPage("/StudySessions/List");
     }
 
-    private bool TryParseFormat(out StudySessionFormat format)
+    private DateTimeOffset ResolveDateTimeOffsetFromBrowserInput(DateTime? localValue, string? isoUtcValue)
     {
-        if (string.IsNullOrWhiteSpace(Format))
+        if (localValue is null)
         {
-            format = default;
-            return false;
+            throw new InvalidOperationException("日時が未設定です。");
         }
 
-        return Enum.TryParse<StudySessionFormat>(Format, true, out format)
-            && Enum.IsDefined(typeof(StudySessionFormat), format);
+        if (!string.IsNullOrWhiteSpace(isoUtcValue)
+            && DateTimeOffset.TryParse(isoUtcValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var exactUtc))
+        {
+            return exactUtc;
+        }
+
+        return _dateTimeConverter.ToDateTimeOffset(localValue.Value);
     }
 }

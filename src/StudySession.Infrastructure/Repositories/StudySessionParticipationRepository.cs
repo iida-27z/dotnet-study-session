@@ -58,8 +58,8 @@ public sealed class StudySessionParticipationRepository : IStudySessionParticipa
                 UserId = participation.UserId.Value,
                 AttendanceStatus = participation.AttendanceStatus.ToString(),
                 Comment = participation.Comment,
-                RespondedAt = participation.RespondedAt,
-                UpdatedAt = participation.UpdatedAt,
+                RespondedAt = participation.RespondedAt?.UtcDateTime,
+                UpdatedAt = participation.UpdatedAt.UtcDateTime,
             }, cancellationToken: cancellationToken));
     }
 
@@ -126,10 +126,23 @@ public sealed class StudySessionParticipationRepository : IStudySessionParticipa
             UserId.From(row.UserId),
             attendanceStatus,
             row.Comment,
-            row.RespondedAt,
-            row.UpdatedAt,
+            row.RespondedAt is null ? null : ToUtcDateTimeOffset(row.RespondedAt.Value),
+            ToUtcDateTimeOffset(row.UpdatedAt),
             row.DisplayName,
             row.LoginId);
+    }
+
+    private static DateTimeOffset ToUtcDateTimeOffset(DateTime value)
+    {
+        var utcValue = value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => TimeZoneInfo.ConvertTimeToUtc(value),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            _ => value,
+        };
+
+        return new DateTimeOffset(utcValue, TimeSpan.Zero);
     }
 
     private sealed record ParticipationRow(

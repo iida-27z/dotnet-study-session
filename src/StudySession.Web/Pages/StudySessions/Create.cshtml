@@ -18,7 +18,10 @@
 
     <div asp-validation-summary="ModelOnly" class="error-message" role="alert"></div>
 
-    <form method="post" class="content-stack">
+    <form method="post" class="content-stack" id="create-study-session-form">
+        <input asp-for="StartTimeUtcValue" type="hidden" id="StartTimeUtcValue" />
+        <input asp-for="EndTimeUtcValue" type="hidden" id="EndTimeUtcValue" />
+
         <div>
             <label asp-for="Title" class="bold">勉強会テーマ</label>
             <span class="field-required" aria-hidden="true">*必須</span>
@@ -68,7 +71,8 @@
 
         <div>
             <label asp-for="Description" class="bold">概要</label>
-            <textarea asp-for="Description" class="input-wide margin-top-05" rows="4" placeholder="勉強会の目的、事前準備、オンラインURL等を記載してください。"></textarea>
+            <textarea asp-for="Description" class="input-wide margin-top-05" rows="4"
+                      placeholder="勉強会の目的、事前準備、オンラインURL等を記載してください。"></textarea>
             <span asp-validation-for="Description" class="error-message"></span>
         </div>
 
@@ -81,4 +85,36 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const form = document.getElementById('create-study-session-form');
+            if (!form) {
+                return;
+            }
+
+            const setIsoValue = (inputId, hiddenId) => {
+                const input = document.getElementById(inputId);
+                const hidden = document.getElementById(hiddenId);
+                if (!input || !hidden || !input.value) {
+                    if (hidden) {
+                        hidden.value = '';
+                    }
+                    return;
+                }
+
+                const localDate = new Date(input.value);
+                if (Number.isNaN(localDate.getTime())) {
+                    hidden.value = '';
+                    return;
+                }
+
+                hidden.value = localDate.toISOString();
+            };
+
+            form.addEventListener('submit', () => {
+                setIsoValue('StartTime', 'StartTimeUtcValue');
+                setIsoValue('EndTime', 'EndTimeUtcValue');
+            });
+        })();
+    </script>
 }

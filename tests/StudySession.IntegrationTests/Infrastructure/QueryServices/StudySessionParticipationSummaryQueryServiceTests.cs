@@ -24,7 +24,7 @@ public class StudySessionParticipationSummaryQueryServiceTests : IClassFixture<P
         var userId = UserId.From(Guid.Parse("22222222-2222-4222-8222-222222222222"));
 
         // act
-        var summaries = await _queryService.GetParticipationSummaryAsync(DateTime.Today, userId, CancellationToken.None);
+        var summaries = await _queryService.GetParticipationSummaryAsync(new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero), userId, CancellationToken.None);
 
         // assert
         Assert.NotEmpty(summaries);

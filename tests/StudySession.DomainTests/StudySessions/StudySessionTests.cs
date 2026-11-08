@@ -12,7 +12,7 @@ public class StudySessionTests
     public void Constructor_WithStartTimeNotBeforeEndTime_ThrowsArgumentException()
     {
         // arrange
-        var startTime = new DateTime(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+        var startTime = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
         var endTime = startTime;
 
         // act & assert
@@ -35,7 +35,7 @@ public class StudySessionTests
     public void Constructor_WithEmptySessionId_ThrowsArgumentException()
     {
         // arrange
-        var startTime = new DateTime(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+        var startTime = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
         var endTime = startTime.AddHours(1);
 
         // act & assert

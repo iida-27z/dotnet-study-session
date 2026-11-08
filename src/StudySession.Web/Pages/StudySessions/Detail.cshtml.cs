@@ -2,9 +2,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using StudySession.Application.StudySessions;
 using StudySession.Domain.Participation;
 using StudySession.Domain.StudySessions;
 using StudySession.Domain.Users;
+using StudySession.Web.Time;
 using StudySessionEntity = StudySession.Domain.StudySessions.StudySession;
 
 namespace StudySession.Web.Pages.StudySessions;
@@ -17,11 +19,19 @@ public sealed class DetailModel : PageModel
 {
     private readonly IStudySessionRepository _studySessionRepository;
     private readonly IStudySessionParticipationRepository _studySessionParticipationRepository;
+    private readonly IDateTimeConverter _dateTimeConverter;
+    private readonly TimeProvider _timeProvider;
 
-    public DetailModel(IStudySessionRepository studySessionRepository, IStudySessionParticipationRepository studySessionParticipationRepository)
+    public DetailModel(
+        IStudySessionRepository studySessionRepository,
+        IStudySessionParticipationRepository studySessionParticipationRepository,
+        IDateTimeConverter dateTimeConverter,
+        TimeProvider timeProvider)
     {
         _studySessionRepository = studySessionRepository ?? throw new ArgumentNullException(nameof(studySessionRepository));
         _studySessionParticipationRepository = studySessionParticipationRepository ?? throw new ArgumentNullException(nameof(studySessionParticipationRepository));
+        _dateTimeConverter = dateTimeConverter ?? throw new ArgumentNullException(nameof(dateTimeConverter));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
     [BindProperty(SupportsGet = true)]
@@ -37,9 +47,11 @@ public sealed class DetailModel : PageModel
 
     public List<ParticipantRow> Participants { get; private set; } = [];
 
-    public bool IsAttendanceOpen => Session is not null && DateTime.UtcNow <= GetDeadline(Session);
+    public IDateTimeConverter TimeZone => _dateTimeConverter;
 
-    public string DeadlineDisplay => Session is null ? string.Empty : GetDeadline(Session).ToString("yyyy/MM/dd HH:mm");
+    public bool IsAttendanceOpen => Session is not null && _timeProvider.GetUtcNow() <= GetDeadline(Session);
+
+    public string DeadlineDisplay => Session is null ? string.Empty : _dateTimeConverter.ToLocalDateTime(GetDeadline(Session)).ToString("yyyy/MM/dd HH:mm");
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -125,10 +137,11 @@ public sealed class DetailModel : PageModel
             return Page();
         }
 
+        var now = _timeProvider.GetUtcNow();
         var participation = await _studySessionParticipationRepository.FindBySessionAndUserIdAsync(Session.SessionId, currentUserId, cancellationToken)
-            ?? new StudySessionParticipation(Session.SessionId, currentUserId, attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+            ?? new StudySessionParticipation(Session.SessionId, currentUserId, attendanceStatus, normalizedComment, now, now);
 
-        participation.UpdateAttendance(attendanceStatus, normalizedComment, DateTime.UtcNow, DateTime.UtcNow);
+        participation.UpdateAttendance(attendanceStatus, normalizedComment, now, now, now);
         await _studySessionParticipationRepository.SaveAsync(participation, cancellationToken);
 
         return RedirectToPage("/StudySessions/List");
@@ -190,9 +203,10 @@ public sealed class DetailModel : PageModel
             && Enum.IsDefined(typeof(AttendanceStatus), status);
     }
 
-    private static DateTime GetDeadline(StudySessionEntity session)
+    private DateTimeOffset GetDeadline(StudySessionEntity session)
     {
-        return session.StartTime.ToUniversalTime().Date.AddDays(-1).AddHours(18);
+        var deadlineInLocal = _dateTimeConverter.ToLocalDateTime(session.StartTime).Date.AddDays(-1).AddHours(18);
+        return _dateTimeConverter.ToDateTimeOffset(deadlineInLocal);
     }
 
     public sealed record ParticipantRow(string LoginId, string DisplayName, AttendanceStatus Status, string Comment)

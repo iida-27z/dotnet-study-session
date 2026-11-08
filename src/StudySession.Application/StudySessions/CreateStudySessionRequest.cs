@@ -8,8 +8,8 @@ namespace StudySession.Application.StudySessions;
 /// </summary>
 public sealed record CreateStudySessionRequest(
     string Title,
-    DateTime StartTime,
-    DateTime EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     StudySessionFormat Format,
     int CapacityOnsite,
     int CapacityRemote,

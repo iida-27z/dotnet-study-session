@@ -15,7 +15,7 @@ public sealed class GetAttendanceSummaryUseCase(IStudySessionParticipationSummar
     /// <summary>
     /// 指定日の以降に開催される勉強会の参加状況サマリーを取得します。
     /// </summary>
-    public Task<List<StudySessionParticipationSummaryDto>> ExecuteAsync(DateTime fromDate, UserId userId, CancellationToken cancellationToken = default)
+    public Task<List<StudySessionParticipationSummaryDto>> ExecuteAsync(DateTimeOffset fromDate, UserId userId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(userId);
         return _queryService.GetParticipationSummaryAsync(fromDate, userId, cancellationToken);
