@@ -87,7 +87,7 @@ public sealed class CreateModel : PageModel
             return Page();
         }
 
-        if (StartTime.Value < DateTime.Now)
+        if (StartTime.Value.ToUniversalTime() < DateTime.UtcNow)
         {
             ModelState.AddModelError(nameof(StartTime), "開始日時は現在以降で入力してください。");
         }
