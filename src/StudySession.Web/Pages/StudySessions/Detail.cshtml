@@ -1,0 +1,150 @@
+@page "/study_sessions/{id}"
+@using StudySession.Domain.Participation
+@using StudySession.Domain.StudySessions
+@model global::StudySession.Web.Pages.StudySessions.DetailModel
+@{
+    ViewData["Title"] = Model.Session is null ? "勉強会詳細" : Model.Session.Title;
+}
+
+@if (Model.Session is null)
+{
+    <section class="common-container">
+        <h1 class="page-title">勉強会が見つかりませんでした</h1>
+        <p class="page-lead">対象の勉強会は既に削除されたか、アクセス権がありません。</p>
+        <a asp-page="/StudySessions/List" class="btn-primary">一覧へ戻る</a>
+    </section>
+}
+else
+{
+    <section class="common-container">
+        <nav class="breadcrumb" aria-label="パンくずリスト">
+            <ol class="breadcrumb-list">
+                <li><a asp-page="/StudySessions/List" class="link-reset">勉強会一覧</a></li>
+                <li><span aria-current="page">@Model.Session.Title</span></li>
+            </ol>
+        </nav>
+
+        <h1 class="page-title">@Model.Session.Title</h1>
+
+        @if (Model.IsAttendanceOpen)
+        {
+            <div class="info-message margin-top-05" role="status">
+                <strong>出欠変更を受付中:</strong> 開催前日の 18:00 まで出欠の変更が可能です。
+            </div>
+        }
+        else
+        {
+            <div class="info-message margin-top-05" role="status">
+                <strong>出欠変更は締切済み:</strong> 開催前日の 18:00 を過ぎています。
+            </div>
+        }
+
+        <h2 class="common-heading">概要</h2>
+        <p class="page-lead">@(string.IsNullOrWhiteSpace(Model.Session.Description) ? "概要は登録されていません。" :
+                                            Model.Session.Description)</p>
+            <hr>
+
+            <h2 class="common-heading">開催情報</h2>
+            <div class="surface-panel margin-bottom-05">
+                <div class="meta-row">
+                    <span class="bold display-block margin-bottom-05">開催形式:</span>
+                    <span
+                        class="badge @(Model.Session.Format == StudySessionFormat.OnsiteOnly ? "badge-success" : Model.Session.Format == StudySessionFormat.RemoteOnly ? "badge-info" : "badge-warning")">
+                        @(Model.Session.Format == StudySessionFormat.OnsiteOnly ? "対面のみ (現地開催)" : Model.Session.Format ==
+                    StudySessionFormat.RemoteOnly ? "リモートのみ" : "ハイブリッド")
+                    </span>
+                </div>
+                <div class="meta-row">
+                    <span class="bold display-block margin-bottom-05">開催日時:</span>
+                    <span>@Model.Session.StartTime.ToString("yyyy年M月d日 (ddd) HH:mm") 〜
+                        @Model.Session.EndTime.ToString("yyyy年M月d日 (ddd) HH:mm")</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="bold display-block margin-bottom-05">出欠変更締切:</span>
+                        <span>@Model.DeadlineDisplay</span>
+                    </div>
+                </div>
+                <hr>
+
+                <h2 class="common-heading">参加申込</h2>
+                <form method="post" class="surface-panel margin-bottom-05">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="error-message" role="alert"></div>
+
+                    <span class="bold display-block margin-bottom-05">現在のステータス:</span>
+                    <span
+                        class="badge @(Model.AttendanceStatusValue == AttendanceStatus.Onsite.ToString() ? "badge-success" : Model.AttendanceStatusValue == AttendanceStatus.Remote.ToString() ? "badge-info" : Model.AttendanceStatusValue == AttendanceStatus.Absent.ToString() ? "badge-danger" : "badge-warning")">
+                        @(Model.AttendanceStatusValue == AttendanceStatus.Onsite.ToString() ? "対面出席" : Model.AttendanceStatusValue
+                    == AttendanceStatus.Remote.ToString() ? "リモート出席" : Model.AttendanceStatusValue ==
+                    AttendanceStatus.Absent.ToString() ? "欠席" : "未回答")
+                    </span>
+
+                    <div class="margin-top-05">
+                        <label><input asp-for="AttendanceStatusValue" type="radio" value="Onsite" /> 対面出席</label>
+                        @if (Model.Session.Format != StudySessionFormat.OnsiteOnly)
+                        {
+                            <label><input asp-for="AttendanceStatusValue" type="radio" value="Remote" /> リモート出席</label>
+                        }
+                        else
+                        {
+                            <label class="color-gray"><input asp-for="AttendanceStatusValue" type="radio" value="Remote" disabled />
+                                リモート出席 (対象外)</label>
+                            }
+                            <label><input asp-for="AttendanceStatusValue" type="radio" value="Absent" /> 欠席</label>
+                            <label><input asp-for="AttendanceStatusValue" type="radio" value="Unanswered" /> 未回答</label>
+                        </div>
+                        <span asp-validation-for="AttendanceStatusValue" class="error-message"></span>
+
+                        <div class="margin-top-05">
+                            <label asp-for="Comment" class="bold">コメント・連絡事項:</label>
+                            <input asp-for="Comment" class="input-wide margin-top-05" placeholder="例: 10分ほど遅刻予定です / 実機準備のサポート可能です"
+                                   maxlength="500" />
+                            <span asp-validation-for="Comment" class="error-message"></span>
+                        </div>
+
+                        <div class="margin-top-05">
+                            <button type="submit" class="btn-primary btn-compact">更新する</button>
+                            <a asp-page="/StudySessions/List" class="btn-secondary">キャンセル</a>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="common-container">
+                    <h2 class="common-heading">参加者名簿</h2>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ユーザーID</th>
+                                    <th>氏名</th>
+                                    <th>出欠・参加ステータス</th>
+                                    <th>コメント</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var participant in Model.Participants)
+                                {
+                                    <tr>
+                                        <td>@participant.LoginId</td>
+                                        <td class="@(participant.Status == AttendanceStatus.Absent ? "color-gray" : "bold")">
+                                            @participant.DisplayName</td>
+                                            <td>
+                                                <span class="badge @(participant.Status == AttendanceStatus.Onsite ? "badge-success" : participant.Status == AttendanceStatus.Remote ? "badge-info" : participant.Status == AttendanceStatus.Absent ? "badge-danger" : "badge-warning")">
+                                                    @(participant.Status == AttendanceStatus.Onsite ? "対面出席" : participant.Status ==
+                                            AttendanceStatus.Remote ? "リモート出席" : participant.Status == AttendanceStatus.Absent ? "欠席" :
+                  "未回答")
+                                                </span>
+                                            </td>
+                                            <td class="@(participant.Status == AttendanceStatus.Absent ? "color-gray" : string.Empty)">
+                                                @participant.Comment</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    }
+
+                    @section Scripts {
+                        <partial name="_ValidationScriptsPartial" />
+                    }
