@@ -1,0 +1,14 @@
+@page "/Error404"
+@model StudySession.Web.Pages.Error404Model
+@{
+    ViewData["Title"] = "ページ未検出";
+}
+
+<section class="common-container auth-shell">
+    <h1 class="page-title">404 ページ未検出</h1>
+    <p class="page-lead">指定されたページは見つかりませんでした。</p>
+    <hr>
+    <div class="button-row">
+        <a asp-page="/StudySessions/List" class="btn-primary">勉強会一覧へ戻る</a>
+    </div>
+</section>
