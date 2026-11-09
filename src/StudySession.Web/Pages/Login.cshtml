@@ -1,0 +1,35 @@
+@page "/login"
+@model StudySession.Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "ログイン";
+}
+
+<section class="common-container auth-shell">
+    <h1 class="page-title">ログインしてください</h1>
+    <hr>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="error-message" role="alert">@Model.ErrorMessage</div>
+    }
+
+    <form method="post" class="content-stack">
+        <div>
+            <label asp-for="LoginId" class="bold">ユーザーID</label>
+            <span class="field-required" aria-hidden="true">必須</span>
+            <input asp-for="LoginId" class="input-wide margin-top-05" autocomplete="username" required
+                   aria-required="true" />
+            <span asp-validation-for="LoginId" class="error-message"></span>
+        </div>
+        <div>
+            <label asp-for="Password" class="bold">パスワード</label>
+            <span class="field-required" aria-hidden="true">必須</span>
+            <input asp-for="Password" type="password" class="input-wide margin-top-05" autocomplete="current-password"
+                   required aria-required="true" />
+            <span asp-validation-for="Password" class="error-message"></span>
+        </div>
+        <div class="button-row">
+            <button type="submit" class="btn-primary">ログイン</button>
+        </div>
+    </form>
+</section>

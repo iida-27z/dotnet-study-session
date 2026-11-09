@@ -1,0 +1,22 @@
+@page "/study_sessions/create"
+@model StudySession.Web.Pages.StudySessions.CreateModel
+@{
+    ViewData["Title"] = "勉強会作成";
+}
+
+<section class="common-container">
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+        <ol class="breadcrumb-list">
+            <li><a asp-page="/StudySessions/List" class="link-reset">勉強会一覧</a></li>
+            <li><span aria-current="page">新規作成</span></li>
+        </ol>
+    </nav>
+
+    <h1 class="page-title">新規勉強会の登録</h1>
+    <p class="page-lead">この画面は次の実装フェーズでフォーム投稿処理を追加します。</p>
+    <hr>
+
+    <div class="info-message" role="status">
+        作成フォーム本体は実装中です。先にログイン基盤と認証導線を整備しています。
+    </div>
+</section>
