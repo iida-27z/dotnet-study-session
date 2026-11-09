@@ -1,0 +1,14 @@
+@page "/Error500"
+@model StudySession.Web.Pages.Error500Model
+@{
+    ViewData["Title"] = "システムエラー";
+}
+
+<section class="common-container auth-shell">
+    <h1 class="page-title">500 システムエラー</h1>
+    <p class="page-lead">処理中に問題が発生しました。時間をおいて再度お試しください。</p>
+    <hr>
+    <div class="button-row">
+        <a asp-page="/StudySessions/List" class="btn-primary">勉強会一覧へ戻る</a>
+    </div>
+</section>
