@@ -54,4 +54,31 @@
 ```
 
 ## クイックスタート
-Coming soon...
+このプロジェクトは、.NET と PostgreSQL を前提に動作します。開発時は GitHub Codespaces や Dev Container を使うと、アプリと DB をまとめて起動できます。
+
+### 1. 開発環境を起動
+GitHub から GitHub Codespaces を利用するか、VS Code でこのリポジトリを開き、Dev Container で再度開いてください。  
+`.devcontainer/docker-compose.yml` により、Web アプリ用の実行環境と PostgreSQL が自動で起動します。
+なお、`.devcontainer/devcontainer.json` の `initializeCommand` は、Linux コマンドとして実行されるため、Windows 環境では、 WSL の利用を推奨します。
+
+### 2. 依存関係の取得と検証
+```bash
+dotnet restore
+dotnet build
+dotnet test
+```
+
+### 3. Web アプリを起動
+Web アプリを起動する場合は、`.vscode/launch.json` の設定を利用して、VS Code からデバッグ実行することも可能です。
+また、コマンドラインから起動する場合は、以下のように実行します。
+```bash
+dotnet run --project src/StudySession.Web/StudySession.Web.csproj --launch-profile http
+```
+
+### 4. Batch 処理を起動
+Batch 処理を起動する場合は、`.vscode/launch.json` の設定を利用できますが、デフォルトではWebアプリが起動するため、サイドバーの「実行とデバッグ」から対象の構成を選択して実行してください。
+また、コマンドラインから直接実行することも可能です。
+
+```bash
+dotnet run --project src/StudySession.Batch/StudySession.Batch.csproj
+```
