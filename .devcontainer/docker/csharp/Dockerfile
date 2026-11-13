@@ -1,5 +1,5 @@
 FROM node:26.13-trixie-slim AS node-env
-FROM mcr.microsoft.com/dotnet/sdk:10.0.403 AS dotnet-env
+FROM mcr.microsoft.com/dotnet/sdk:11.0.100 AS dotnet-env
 
 COPY --from=node-env /usr/local/bin/node /usr/local/bin/node
 COPY --from=node-env /usr/local/lib/node_modules /usr/local/lib/node_modules
