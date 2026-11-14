@@ -1,0 +1,57 @@
+{
+    "name": "dev",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "dev",
+    "workspaceFolder": "/workspace/app",
+    "remoteUser": "dev",
+    "containerUser": "dev",
+    "updateRemoteUserUID": true,
+    "initializeCommand": "[ -f .devcontainer/.env ] || cp .devcontainer/.env.example .devcontainer/.env",
+    "postCreateCommand": "git config --local commit.template .gitmessage",
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {
+            "installTools": false
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "MS-CEINTL.vscode-language-pack-ja",
+                "streetsidesoftware.code-spell-checker",
+                "ms-dotnettools.csdevkit",
+                "GitHub.vscode-pull-request-github",
+                "github.vscode-github-actions",
+                "mtxr.sqltools",
+                "mtxr.sqltools-driver-pg",
+                "mhutchie.git-graph",
+                "ecmel.vscode-html-css",
+                "ms-vscode.live-server",
+                "ms-azuretools.vscode-containers"
+            ],
+            "settings": {
+                "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
+                "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
+                "editor.formatOnSave": true,
+                "[csharp]": {
+                    "editor.defaultFormatter": "ms-dotnettools.csharp"
+                },
+                "sqltools.connections": [
+                    {
+                        "name": "root_postgres",
+                        "driver": "PostgreSQL",
+                        "connectString": "postgresql://${containerEnv:POSTGRES_USER}:${containerEnv:POSTGRES_PASSWORD}@${containerEnv:POSTGRES_HOST}:5432/${containerEnv:POSTGRES_DB}",
+                        "previewLimit": 100,
+                        "ssh": "Disabled"
+                    },
+                    {
+                        "name": "app_postgres",
+                        "driver": "PostgreSQL",
+                        "connectString": "postgresql://${containerEnv:APP_USER}:${containerEnv:APP_PASSWORD}@${containerEnv:POSTGRES_HOST}:5432/${containerEnv:POSTGRES_DB}?options=-c%20search_path%3D${containerEnv:APP_SCHEMA}",
+                        "previewLimit": 100,
+                        "ssh": "Disabled"
+                    }
+                ]
+            }
+        }
+    }
+}
