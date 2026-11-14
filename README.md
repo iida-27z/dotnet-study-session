@@ -15,6 +15,7 @@
 - **.NET SDK**: 10
 - **テストフレームワーク**: xUnit
 - **データベース**: PostgreSQL
+- **コンテナ環境**: Docker
 - **推奨開発環境**: GitHub Codespaces(VS Code + DevContainer )
 
 ## ディレクトリ構成
@@ -43,10 +44,13 @@
 │   ├── StudySession.WebTests/             # プレゼンテーション層(Webアプリ)
 │   ├── StudySession.BatchTests/           # プレゼンテーション層(バッチ処理)
 │   └── StudySession.IntegrationTests/     # 統合テスト
+├── .dockerignore                          # Dockerビルド除外設定
 ├── .editorconfig                          # エディタ・コードスタイル設定
 ├── .gitattributes                         # Git 属性設定
 ├── .gitignore                             # Git 除外設定
 ├── Directory.Build.props                  # 共通ビルド設定
+├── dockerfile.batch                       # Batch 処理実行コンテナイメージ作成
+├── dockerfile.web                         # Web アプリ実行コンテナイメージ作成
 ├── gitleaks.toml                          # gitleaks 設定ファイル
 ├── global.json                            # .NET SDK バージョン指定
 ├── README.md                              # 本ファイル
