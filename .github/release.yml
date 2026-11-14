@@ -1,0 +1,18 @@
+# PR のラベルによってカテゴリを判定
+changelog:
+  categories:
+    - title: 機能追加・変更
+      labels:
+        - enhancement
+
+    - title: バグ修正
+      labels:
+        - bug
+
+    - title: ドキュメント
+      labels:
+        - documentation
+
+    - title: その他・メンテナンス
+      labels:
+        - "*"

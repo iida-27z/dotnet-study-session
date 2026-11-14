@@ -1,0 +1,61 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "12:00" # UTC (JST 21:00)
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "dotnet"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:10' # UTC (JST 21:10)
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+
+  - package-ecosystem: docker
+    directory: "/.devcontainer/docker/csharp"
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:20' # UTC (JST 21:20)
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: "/.devcontainer/docker/docker"
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:30' # UTC (JST 21:30)
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: "/.devcontainer/docker/postgres"
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:40' # UTC (JST 21:40)
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - docker
