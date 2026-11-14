@@ -65,6 +65,34 @@ jobs:
             --logger "trx" \
             --results-directory TestResults
 
+      - name: Dry-run Publish
+        run: dotnet publish --configuration Release --no-build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Dry-run Container Build(Web)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.web
+          push: false
+          load: false
+          tags: local-ci-web:test
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web
+
+      - name: Dry-run Container Build(Batch)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.batch
+          push: false
+          load: false
+          tags: local-ci-batch:test
+          cache-from: type=gha,scope=batch
+          cache-to: type=gha,scope=batch
+
       - name: Generate Coverage Report
         if: always()
         uses: danielpalme/ReportGenerator-GitHub-Action@v5
