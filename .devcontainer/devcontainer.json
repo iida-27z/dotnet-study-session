@@ -7,7 +7,7 @@
     "containerUser": "dev",
     "updateRemoteUserUID": true,
     "initializeCommand": "[ -f .devcontainer/.env ] || cp .devcontainer/.env.example .devcontainer/.env",
-    "postCreateCommand": "git config --local commit.template .gitmessage",
+    "postCreateCommand": "git config --local commit.template .gitmessage && git config core.hooksPath .githooks",
     "features": {
         "ghcr.io/devcontainers/features/python:1": {
             "installTools": false
