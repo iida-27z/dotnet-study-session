@@ -1,0 +1,22 @@
+## Docker除外ディレクトリ
+**/.git/
+**/bin/
+**/obj/
+**/.devcontainer/
+**/.githooks/
+**/.github/
+**/.vscode/
+**/docs/
+**/TestResults/
+
+# Docker除外ファイル
+**/.gitignore
+**/.gitattributes
+**/.gitignore
+**/.gitmessage
+**/.gitmodules
+**/.gitkeep
+**/.gitleaks.toml
+**/README.md
+**/Dockerfile
+**/.dockerignore
