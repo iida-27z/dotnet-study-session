@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0.403 AS build
+WORKDIR /app
+
+COPY ["StudySession.slnx", "./"]
+COPY ["Directory.Build.props", "./"]
+COPY ["src/StudySession.Domain/StudySession.Domain.csproj", "src/StudySession.Domain/"]
+COPY ["src/StudySession.Application/StudySession.Application.csproj", "src/StudySession.Application/"]
+COPY ["src/StudySession.Infrastructure/StudySession.Infrastructure.csproj", "src/StudySession.Infrastructure/"]
+COPY ["src/StudySession.Web/StudySession.Web.csproj", "src/StudySession.Web/"]
+
+RUN dotnet restore "./src/StudySession.Web/StudySession.Web.csproj"
+
+COPY . .
+RUN dotnet publish "./src/StudySession.Web/StudySession.Web.csproj" -c Release -o /app/publish --no-restore /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+LABEL org.opencontainers.image.source="https://github.com/iida-27z/dotnet-study-session"
+LABEL org.opencontainers.image.description="C# Web Application"
+
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "StudySession.Web.dll"]
