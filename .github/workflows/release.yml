@@ -1,4 +1,4 @@
-name: "RELEASE-NOTE-WRITER"
+name: "RELEASE"
 
 on:
   push:
@@ -12,6 +12,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -96,4 +97,4 @@ jobs:
             ./dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
-            --generate-notes \
+            --generate-notes
