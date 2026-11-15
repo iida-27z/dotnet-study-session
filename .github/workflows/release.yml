@@ -12,11 +12,38 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+
+      - name: Publish application
+        run: |
+          mkdir -p ./dist
+          dotnet publish ./src/StudySession.Web/StudySession.Web.csproj \
+            -c Release \
+            -r win-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:DebugType=None \
+            -o ./publish/win-x64
+
+      - name: Archive artifacts
+        run: |
+          cd publish/win-x64
+          zip -r ../../dist/StudySession.Web-${GITHUB_REF_NAME}-win-x64.zip .
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
+            ./dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes \
